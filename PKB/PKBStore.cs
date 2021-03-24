@@ -1,10 +1,15 @@
 ﻿using Shared;
+using System.Collections.Generic;
 
 namespace PKB
 {
     public class PKBStore : IPKBStore
     {
         private static readonly PKBStore _instance;
+        private List<KeyValuePair<Statement, Statement>> ModifiesList { get; set; }
+        private List<KeyValuePair<Statement, Statement>> FollowsList { get; set; }
+
+        private List<KeyValuePair<Statement, Statement>> ParentList { get; set; }
 
         private PKBStore() { }
 
