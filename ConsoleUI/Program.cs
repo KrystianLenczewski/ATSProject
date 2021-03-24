@@ -17,6 +17,7 @@ namespace ConsoleUI
                 string text = File.ReadAllText(args[0], Encoding.GetEncoding(852));
                 var pkb = PKBStore.Instance;
                 pkb.ParseCode(text);
+                // Design Extractor
                 Console.WriteLine("Ready");
                 while (true)
                 {
