@@ -11,7 +11,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SPAFrontend", "SPAFrontend\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PKB", "PKB\PKB.csproj", "{385B6A76-7C26-48EE-962A-0E9B78E551BD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QueryProcessor", "QueryProcessor\QueryProcessor.csproj", "{98EA14C4-155C-45CC-A701-207E4A3BE60E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QueryProcessor", "QueryProcessor\QueryProcessor.csproj", "{98EA14C4-155C-45CC-A701-207E4A3BE60E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestSPAFrontend", "TestSPAFrontend\TestSPAFrontend.csproj", "{94E28351-09C8-4CF9-8301-0B501F0DAA29}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestQueryProcessor", "TestQueryProcessor\TestQueryProcessor.csproj", "{1DE15C8A-4E8D-4F1E-A83F-A86F822D6D68}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestPKB", "TestPKB\TestPKB.csproj", "{EB682003-1A2A-49AD-90DE-63503188C15C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +45,18 @@ Global
 		{98EA14C4-155C-45CC-A701-207E4A3BE60E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{98EA14C4-155C-45CC-A701-207E4A3BE60E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{98EA14C4-155C-45CC-A701-207E4A3BE60E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94E28351-09C8-4CF9-8301-0B501F0DAA29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94E28351-09C8-4CF9-8301-0B501F0DAA29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94E28351-09C8-4CF9-8301-0B501F0DAA29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94E28351-09C8-4CF9-8301-0B501F0DAA29}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DE15C8A-4E8D-4F1E-A83F-A86F822D6D68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DE15C8A-4E8D-4F1E-A83F-A86F822D6D68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DE15C8A-4E8D-4F1E-A83F-A86F822D6D68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DE15C8A-4E8D-4F1E-A83F-A86F822D6D68}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB682003-1A2A-49AD-90DE-63503188C15C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB682003-1A2A-49AD-90DE-63503188C15C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB682003-1A2A-49AD-90DE-63503188C15C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB682003-1A2A-49AD-90DE-63503188C15C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
