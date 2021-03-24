@@ -8,7 +8,8 @@ namespace Shared
         WHILE,
         ADD,
         CONST,
-        VAR
+        VAR,
+        STMTLIST
     }
 
     public class Statement
