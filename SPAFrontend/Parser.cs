@@ -1,12 +1,11 @@
-﻿using Shared;
-using System;
-using System.Collections.Generic;
+﻿using System;
+using PKB;
 
 namespace SPAFrontend
 {
-    public class Parser
+    public static class Parser
     {
-        public static List<Statement> ParseCode(string code)
+        public static void ParseCode(this PKBStore pkb, string code)
         {
             throw new NotImplementedException();
         }

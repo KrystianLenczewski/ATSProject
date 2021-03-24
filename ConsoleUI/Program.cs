@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using Shared;
+using PKB;
 using SPAFrontend;
 
 namespace ConsoleUI
@@ -16,9 +15,8 @@ namespace ConsoleUI
             if (args.Length == 1)
             {
                 string text = File.ReadAllText(args[0], Encoding.GetEncoding(852));
-                List<Statement> statements = Parser.ParseCode(text); // TODO1: Implementacja ParseCode
-                List<Statement> extractedStatements = DesignExtractor.ParseStataments(statements); // TODO2: Implementacja ParseStataments lub zmiana interfejsów
-                // var pkb = TODO3: wysłanie do parsera - return: wypełnione PKB, argument wejściowy (List<Statement> extractedStatements)
+                var pkb = PKBStore.Instance;
+                pkb.ParseCode(text);
                 Console.WriteLine("Ready");
                 while (true)
                 {
