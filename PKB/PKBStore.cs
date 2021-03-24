@@ -6,10 +6,10 @@ namespace PKB
     public class PKBStore : IPKBStore
     {
         private static readonly PKBStore _instance;
-        private List<KeyValuePair<Statement, Statement>> ModifiesList { get; set; }
-        private List<KeyValuePair<Statement, Statement>> FollowsList { get; set; }
+        public List<KeyValuePair<Statement, Statement>> ModifiesList { get; private set; }
+        public List<KeyValuePair<Statement, Statement>> FollowsList { get; private set; }
 
-        private List<KeyValuePair<Statement, Statement>> ParentList { get; set; }
+        public List<KeyValuePair<Statement, Statement>> ParentList { get; private set; }
 
         private PKBStore() { }
 
