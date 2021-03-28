@@ -10,12 +10,12 @@ namespace ConsoleUI
     {
         static void Main(string[] args)
         {
-            System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             Console.OutputEncoding = Encoding.GetEncoding(852);
 
             if (args.Length == 1)
             {
-                string text = File.ReadAllText(args[0], Encoding.GetEncoding(852));
+                string text = File.ReadAllText("D:\\Kacper\\Sztudien\\II-stopień\\ATS\\Source.txt", Encoding.GetEncoding(852));
                 var pkb = PKBStore.Instance;
                 pkb.ParseCode(text);
                 /*pkb.ParseStataments(pkb.ModifiesList);
