@@ -33,6 +33,8 @@ namespace SPAFrontend
                         currentPath += ".while";
                         var obj = CreateObjectForPath(currentPath + ".param", (line.Split(' ')[2]));
                         final.Merge(obj);
+                        var obj2 = CreateObjectForPath(currentPath + ".rownum", (line.Split(' ')[0].Trim('.')));
+                        final.Merge(obj2);
                         currentPath += ".stmtList";
                     } 
                     else if (line.Contains("if"))
@@ -40,23 +42,29 @@ namespace SPAFrontend
                         currentPath += ".if";
                         var obj = CreateObjectForPath(currentPath + ".param", (line.Split(' ')[2]));
                         final.Merge(obj);
+                        var obj2 = CreateObjectForPath(currentPath + ".rownum", (line.Split(' ')[0].Trim('.')));
+                        final.Merge(obj2);
                         currentPath += ".stmtList";
                     }
                     else if (line.Contains("else"))
                     {
-                        currentPath = currentPath.Remove(currentPath.LastIndexOf('.'));
-                        currentPath = currentPath.Remove(currentPath.LastIndexOf('.'));
                         currentPath += ".else.stmtList";
                     }
                     else if (line.Contains(";") && !line.Contains("}"))
                     {
-                        var obj = CreateObjectForPath(currentPath + ".assignment", (line.Split(' ')[1].Trim(';')));
+                        var obj = CreateObjectForPath(currentPath + ".assignment", (line.Split(' ')[0] + " " + line.Split(' ')[1].Trim(';')));
                         final.Merge(obj);
                     }
                     else
                     {
-                        var obj = CreateObjectForPath(currentPath + ".assignment", (line.Split(' ')[1].Trim(';')));
+                        var obj = CreateObjectForPath(currentPath + ".assignment", (line.Split(' ')[0] + " " + line.Split(' ')[1].Trim(';')));
                         final.Merge(obj);
+
+                        for (int i = 0; i < line.Length - line.Replace("}", "").Length; i++)
+                        {
+                            currentPath = currentPath.Remove(currentPath.LastIndexOf('.'));
+                            currentPath = currentPath.Remove(currentPath.LastIndexOf('.'));
+                        }
                     }
                 }
                 Console.WriteLine(final);
