@@ -4,6 +4,7 @@ using Shared;
 using PKB;
 using Newtonsoft.Json.Linq;
 using System.IO;
+using System.Text;
 
 namespace SPAFrontend
 {
@@ -15,53 +16,95 @@ namespace SPAFrontend
 
             using (StringReader reader = new StringReader(code))
             {
-                string currentPath = "$.";
+                string currentPath = "";
                 string line = "";
                 while ((line = reader.ReadLine()) != null)
                 {
                     if (line.Contains("procedure"))
                     {
                         final.Add("procedure", "");
-                        currentPath += "procedure.";
-                        final[currentPath + "name"] = (line.Split(' ')[1]);
+                        currentPath = "$.procedure";
+                        var obj = CreateObjectForPath(currentPath + ".name", (line.Split(' ')[1]));
+                        final.Merge(obj);
+                        currentPath += ".stmtList";
                     }
                     else if (line.Contains("while"))
                     {
-
+                        currentPath += ".while";
+                        var obj = CreateObjectForPath(currentPath + ".param", (line.Split(' ')[2]));
+                        final.Merge(obj);
+                        currentPath += ".stmtList";
                     } 
                     else if (line.Contains("if"))
                     {
-
+                        currentPath += ".if";
+                        var obj = CreateObjectForPath(currentPath + ".param", (line.Split(' ')[2]));
+                        final.Merge(obj);
+                        currentPath += ".stmtList";
                     }
                     else if (line.Contains("else"))
                     {
-
+                        currentPath = currentPath.Remove(currentPath.LastIndexOf('.'));
+                        currentPath = currentPath.Remove(currentPath.LastIndexOf('.'));
+                        currentPath += ".else.stmtList";
                     }
                     else if (line.Contains(";") && !line.Contains("}"))
                     {
-
-                    }
-                    else if (line.Contains(";"))
-                    {
-
+                        var obj = CreateObjectForPath(currentPath + ".assignment", (line.Split(' ')[1].Trim(';')));
+                        final.Merge(obj);
                     }
                     else
                     {
-                        Console.WriteLine("ch00y-nya");
+                        var obj = CreateObjectForPath(currentPath + ".assignment", (line.Split(' ')[1].Trim(';')));
+                        final.Merge(obj);
                     }
                 }
+                Console.WriteLine(final);
             }
 
             Console.Write(code);
         }
-    }
 
-    public class StatementInstance
-    {
-        public Statement type { get; set; }
-        public List<string> args { get; set; }
-        public List<StatementInstance> children { get; set; }
+        private static JObject CreateObjectForPath(string target, object newValue)
+        {
+            var json = new StringBuilder();
 
-        StatementInstance() { }
+            json.Append(@"{");
+
+            var paths = target.Split('.');
+
+            var i = -1;
+            var objCount = 0;
+
+            foreach (string path in paths)
+            {
+                i++;
+
+                if (paths[i] == "$") continue;
+
+                json.Append('"');
+                json.Append(path);
+                json.Append('"');
+                json.Append(": ");
+
+                if (i + 1 != paths.Length)
+                {
+                    json.Append("{");
+                    objCount++;
+                }
+            }
+
+            json.Append("\"" + newValue + "\"");
+
+            for (int level = 1; level <= objCount; level++)
+            {
+                json.Append(@"}");
+            }
+
+            json.Append(@"}");
+            var jsonString = json.ToString();
+            var obj = JObject.Parse(jsonString);
+            return obj;
+        }
     }
 }
