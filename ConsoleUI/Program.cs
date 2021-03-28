@@ -18,7 +18,7 @@ namespace ConsoleUI
                 string text = File.ReadAllText("D:\\Kacper\\Sztudien\\II-stopień\\ATS\\Source.txt", Encoding.GetEncoding(852));
                 var pkb = PKBStore.Instance;
                 pkb.ParseCode(text);
-                pkb.ParseStataments(pkb.ModifiesList);
+                /*pkb.ParseStataments(pkb.ModifiesList);
                 // Design Extractor
                 Console.WriteLine("Ready");
                 while (true)
@@ -26,8 +26,9 @@ namespace ConsoleUI
                     var declarations = Console.ReadLine(); // example: stmt s;
                     var command = Console.ReadLine(); // example: Select s such that Modifies(s,"x")
                     // var result = TODO4: wyszukiwarka PQL, return: lista odpowiedzi (List<string>) lub string z odpowiedziami, argumenty wejściowe (this PKB pkb, string declarations, string command)
-                    Console.WriteLine(/*result*/); // tutaj do wypisania result TODO5
-                }
+                    Console.WriteLine("result"); // tutaj do wypisania result TODO5
+                }*/
+                Console.ReadKey();
             }
         }
     }
