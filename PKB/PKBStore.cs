@@ -1,15 +1,25 @@
-﻿using Shared;
+﻿using PKB.Relations;
+using Shared;
 using System.Collections.Generic;
 
 namespace PKB
 {
-    public class PKBStore : IPKBStore
+    public class PKBStore
     {
         private static readonly PKBStore _instance;
-        public List<KeyValuePair<Statement, Statement>> ModifiesList { get; private set; }
-        public List<KeyValuePair<Statement, Statement>> FollowsList { get; private set; }
+        private List<Modifies> listModifies;
+        public List<Modifies> ListModifies { get=> listModifies; private set=>listModifies=value; }
+        private List<Follows> listFollows;
+        public List<Follows> ListFollows { get => listFollows; private set => listFollows = value; }
+        private List<FollowStar> listFollowStar;
+        public List<FollowStar> ListFollowStar { get => listFollowStar; private set => listFollowStar = value; }
+        private List<Parent> listParent;
+        public List<Parent> ListParent { get => listParent; private set => listParent = value; }
+        private List<ParentStar> listParentStar;
+        public List<ParentStar> ListParentStar { get => listParentStar; private set => listParentStar = value; }
+        private List<Uses> listUses;
+        public List<Uses> ListUses { get => listUses; private set => listUses = value; }
 
-        public List<KeyValuePair<Statement, Statement>> ParentList { get; private set; }
 
         private PKBStore() { }
 
@@ -17,13 +27,7 @@ namespace PKB
 
         public static PKBStore Instance { get { return _instance; } }
 
-        #region parser services
-        public void SetFollows(Statement s1, Statement s2) => _instance.SetFollows(s1, s2);
-
-        public void SetParent(Statement s1, Statement s2) => _instance.SetParent(s1, s2);
-
-        // TODO: ...
-        #endregion
+    
 
         #region pql services
         // TODO: ...

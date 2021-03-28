@@ -2,7 +2,7 @@
 
 namespace Shared
 {
-    public enum Statement
+    public enum StatementType
     {
         ASSIGN,
         WHILE,

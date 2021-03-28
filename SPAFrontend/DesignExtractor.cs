@@ -7,7 +7,7 @@ namespace SPAFrontend
 {
     public static class DesignExtractor
     {
-        public static List<Statement> ParseStataments(this PKBStore pkb, List<KeyValuePair<Statement, Statement>> connections)
+        public static List<StatementType> ParseStataments(this PKBStore pkb, List<KeyValuePair<StatementType, StatementType>> connections)
         {
             throw new NotImplementedException();
         }
