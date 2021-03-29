@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PKB\PKB.csproj" />
+    <ProjectReference Include="..\QueryProcessor\QueryProcessor.csproj" />
     <ProjectReference Include="..\SPAFrontend\SPAFrontend.csproj" />
   </ItemGroup>
 
