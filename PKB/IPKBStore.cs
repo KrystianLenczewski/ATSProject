@@ -1,10 +1,15 @@
 ﻿using Shared;
+using System.Collections.Generic;
 
 namespace PKB
 {
-    interface IPKBStore
+    public interface IPKBStore
     {
-        void SetFollows(Statement s1, Statement s2);
-        void SetParent(Statement s1, Statement s2);
+        void SetFollows(Expression s1, Expression s2);
+        void SetParent(Expression s1, Expression s2);
+
+        List<KeyValuePair<Expression, Expression>> ModifiesList { get; }
+        List<KeyValuePair<Expression, Expression>> FollowsList { get; }
+        List<KeyValuePair<Expression, Expression>> ParentList { get; }
     }
 }
