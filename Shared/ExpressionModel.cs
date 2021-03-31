@@ -34,35 +34,35 @@
         CONST = ExpressionType.CONST,
     }
 
-    public class Expression
+    public class ExpressionModel
     {
         public ExpressionType Type { get; private set; }
         public string Name { get; private set; }
         public int Index { get; set; }
 
-        public Expression(FactorType type, string name)
+        public ExpressionModel(FactorType type, string name)
         {
             Type = (ExpressionType)type;
             Name = name;
         }
 
-        public Expression(StatementType type)
+        public ExpressionModel(StatementType type)
         {
             Type = (ExpressionType)type;
         }
 
-        public Expression(StatementType type, int index)
+        public ExpressionModel(StatementType type, int index)
         {
             Type = (ExpressionType)type;
             Index = index;
         }
 
-        public Expression(SpecialType type)
+        public ExpressionModel(SpecialType type)
         {
             Type = (ExpressionType)type;
         }
 
-        public Expression(OperationsType type, int index)
+        public ExpressionModel(OperationsType type, int index)
         {
             Type = (ExpressionType)type;
             Index = index;

@@ -7,7 +7,7 @@ namespace SPAFrontend
 {
     public static class DesignExtractor
     {
-        public static void Extract(this IPKBStore pkb, List<KeyValuePair<Expression, Expression>> connections)
+        public static void Extract(this IPKBStore pkb, List<KeyValuePair<ExpressionModel, ExpressionModel>> connections)
         {
             // TODO: extractor if necessary
         }
