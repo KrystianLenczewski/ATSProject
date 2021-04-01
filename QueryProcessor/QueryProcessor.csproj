@@ -5,9 +5,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="QueryResultProjector\" />
-    <Folder Include="QueryEvaluator\" />
-    <Folder Include="QueryPreprocessor\" />
+    <Compile Remove="QueryEvaluator\**" />
+    <Compile Remove="QueryPreprocessor\**" />
+    <Compile Remove="QueryResultProjector\**" />
+    <EmbeddedResource Remove="QueryEvaluator\**" />
+    <EmbeddedResource Remove="QueryPreprocessor\**" />
+    <EmbeddedResource Remove="QueryResultProjector\**" />
+    <None Remove="QueryEvaluator\**" />
+    <None Remove="QueryPreprocessor\**" />
+    <None Remove="QueryResultProjector\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PKB\PKB.csproj" />
   </ItemGroup>
 
 </Project>
