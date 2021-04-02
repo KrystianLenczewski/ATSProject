@@ -10,7 +10,7 @@ namespace SPAFrontend
 {
     public static class Parser
     {
-        public static void ParseCode(this PKBStore pkb, string code)
+        public static void ParseCode(this IPKBStore pkb, string code)
         {
             JObject final = new JObject();
 

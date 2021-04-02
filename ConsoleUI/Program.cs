@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using Microsoft.Extensions.DependencyInjection;
 using PKB;
 using SPAFrontend;
 
@@ -16,10 +17,14 @@ namespace ConsoleUI
             if (args.Length == 1)
             {
                 string text = File.ReadAllText(args[0], Encoding.GetEncoding(852));
-                var pkb = PKBStore.Instance;
+
+                var serviceProvider = new ServiceCollection()
+                    .AddSingleton<IPKBStore, PKBStore>()
+                    .BuildServiceProvider();
+
+                var pkb = serviceProvider.GetService<IPKBStore>();
                 pkb.ParseCode(text);
-                pkb.ParseStataments(pkb.ModifiesList);
-                // Design Extractor
+                pkb.Extract(pkb.ModifiesList);
                 Console.WriteLine("Ready");
                 while (true)
                 {
