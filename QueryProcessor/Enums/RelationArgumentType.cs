@@ -13,6 +13,10 @@ namespace QueryProcessor.Enums
         Assign,
         Discard,//_
         Variable,
-        Integer
+        Integer,
+        While,
+        Constant,
+        Call,
+        If
     }
 }

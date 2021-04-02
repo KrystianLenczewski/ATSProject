@@ -6,10 +6,13 @@ namespace QueryProcessor.Enums
 {
     internal enum RelationType
     {
-        CALLS,
+        MODIFIES,
+        USES,
         PARENT,
+        PARENT_STAR,
         FOLLOWS,
         FOLLOWS_STAR,
-        MODIFIES
+        CALLS,
+        CALLS_STAR,
     }
 }
