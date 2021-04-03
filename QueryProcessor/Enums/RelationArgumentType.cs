@@ -17,6 +17,7 @@ namespace QueryProcessor.Enums
         While,
         Constant,
         Call,
-        If
+        If,
+        BOOLEAN//zadeklarowany dla SymbolTabe
     }
 }
