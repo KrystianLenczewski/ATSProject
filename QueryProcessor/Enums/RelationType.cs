@@ -4,7 +4,7 @@ using System.Text;
 
 namespace QueryProcessor.Enums
 {
-    internal enum RelationType
+    public enum RelationType
     {
         MODIFIES,
         USES,

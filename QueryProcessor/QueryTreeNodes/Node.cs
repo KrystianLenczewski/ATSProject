@@ -5,9 +5,9 @@ using System.Text;
 
 namespace QueryProcessor.QueryTreeNodes
 {
-    internal abstract class Node
+    public abstract class Node
     {
         protected NodeType _nodeType;
-        public NodeType NodeType { get => _nodeType; protected set { } }
+        public NodeType NodeType { get => _nodeType; set { _nodeType = value; } }
     }
 }

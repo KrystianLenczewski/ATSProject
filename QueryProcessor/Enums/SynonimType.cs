@@ -4,10 +4,16 @@ using System.Text;
 
 namespace QueryProcessor.Enums
 {
-    internal enum SynonimType
+    public enum SynonimType
     {
         WHILE,
         IF,
-        BOOLEAN
+        BOOLEAN,
+        Procedure,
+        Statement,
+        Assign,
+        Variable,
+        Call,
+
     }
 }

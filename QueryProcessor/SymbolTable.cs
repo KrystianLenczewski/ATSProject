@@ -57,6 +57,34 @@ namespace QueryProcessor
             return querySymbols.ContainsKey(declarationName);
         }
 
+        internal RelationArgumentType GetRelationArgumentType(string relationArgumentName)
+        {
+            if (querySymbols.TryGetValue(relationArgumentName, out RelationArgumentType relationArgumentType))
+                return relationArgumentType;
+            if (int.TryParse(relationArgumentName, out _))
+                return RelationArgumentType.Integer;
+
+            throw new ArgumentException($"Argument: {relationArgumentName} jest używany w zapytaniu lecz nie był zadeklarowany");
+        }
+
+        internal SynonimType GetSynonimType(string synonimName)
+        {
+            if(querySymbols.TryGetValue(synonimName, out RelationArgumentType relationArgumentType))
+            {
+                if (relationArgumentType == RelationArgumentType.While) return SynonimType.WHILE;
+                if (relationArgumentType == RelationArgumentType.If) return SynonimType.IF;
+                if (relationArgumentType == RelationArgumentType.BOOLEAN) return SynonimType.BOOLEAN;
+                if (relationArgumentType == RelationArgumentType.Assign) return SynonimType.Assign;
+                if (relationArgumentType == RelationArgumentType.Call) return SynonimType.Call;
+                if (relationArgumentType == RelationArgumentType.Procedure) return SynonimType.Procedure;
+                if (relationArgumentType == RelationArgumentType.Statement) return SynonimType.Statement;
+                if (relationArgumentType == RelationArgumentType.Variable) return SynonimType.Variable;
+
+            }
+
+            throw new ArgumentException($"Argument: {synonimName} jest używany w zapytaniu lecz nie był zadeklarowany");
+        }
+
         private RelationArgumentType GetTypeForDeclaration(string declarationName)
         {
             if (declarationName.Equals("procedure", StringComparison.OrdinalIgnoreCase)) return RelationArgumentType.Procedure;

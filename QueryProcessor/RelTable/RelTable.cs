@@ -110,12 +110,7 @@ namespace QueryProcessor.RelTable
         {
             if (relationName.Equals("Modifies", StringComparison.OrdinalIgnoreCase)) return RelationType.MODIFIES;
             else if (relationName.Equals("Follows", StringComparison.OrdinalIgnoreCase)) return RelationType.FOLLOWS;
-            else throw new Exception("Nie rozpoznano relacji.");
-        }
-
-        public RelationArgumentType GetRelationArgumentType(string relationArgumentName)
-        {
-            if(relationArgumentName.)
+            else throw new ArgumentException("Nie rozpoznano relacji.");
         }
     }
 }

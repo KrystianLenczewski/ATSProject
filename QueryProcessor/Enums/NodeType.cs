@@ -4,7 +4,7 @@ using System.Text;
 
 namespace QueryProcessor.Enums
 {
-    internal enum NodeType
+    public enum NodeType
     {
         ROOT,
         SUCH_THAT,

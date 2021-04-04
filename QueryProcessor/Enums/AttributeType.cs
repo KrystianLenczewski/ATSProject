@@ -4,7 +4,7 @@ using System.Text;
 
 namespace QueryProcessor.Enums
 {
-    internal enum AttributeType
+    public enum AttributeType
     {
         STMT,
         VARNAME

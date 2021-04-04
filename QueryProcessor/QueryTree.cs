@@ -7,13 +7,37 @@ using System.Text;
 
 namespace QueryProcessor
 {
-    internal class QueryTree
+    public class QueryTree
     {
-        private readonly SectionNode _rootNode;
+        private readonly SectionNode _rootNode = new SectionNode();
 
         public QueryTree()
         {
 
+        }
+
+        public void AddSuchThatNode(SectionNode suchThatNode)
+        {
+            Node existingResultNode = _rootNode.Childrens.FirstOrDefault(f => f.NodeType == NodeType.SUCH_THAT);
+            if (existingResultNode != null)
+            {
+                _rootNode.Childrens.Remove(existingResultNode);
+            }
+
+            suchThatNode.NodeType = NodeType.SUCH_THAT;
+            _rootNode.Childrens.Add(suchThatNode);
+        }
+
+        public void AddResultNode(SectionNode resultNode)
+        {
+            Node existingResultNode = _rootNode.Childrens.FirstOrDefault(f => f.NodeType == NodeType.RESULT);
+            if (existingResultNode != null)
+            {
+                _rootNode.Childrens.Remove(existingResultNode);
+            }
+
+            resultNode.NodeType = NodeType.RESULT;
+            _rootNode.Childrens.Add(resultNode);
         }
 
         public List<AttributeNode> GetAttributeNodes()
