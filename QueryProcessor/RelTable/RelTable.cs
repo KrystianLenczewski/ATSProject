@@ -106,5 +106,16 @@ namespace QueryProcessor.RelTable
             else return true;
 
         }
+        public RelationType GetRelationType(string relationName)
+        {
+            if (relationName.Equals("Modifies", StringComparison.OrdinalIgnoreCase)) return RelationType.MODIFIES;
+            else if (relationName.Equals("Follows", StringComparison.OrdinalIgnoreCase)) return RelationType.FOLLOWS;
+            else throw new Exception("Nie rozpoznano relacji.");
+        }
+
+        public RelationArgumentType GetRelationArgumentType(string relationArgumentName)
+        {
+            if(relationArgumentName.)
+        }
     }
 }

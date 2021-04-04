@@ -1,4 +1,5 @@
-﻿using QueryProcessor.Infrastructure;
+﻿using QueryProcessor.Enums;
+using QueryProcessor.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,11 +47,30 @@ namespace QueryProcessor
                 bool withSectionIsValid = ValidateSuchThatSection(splitedQuery, withIndex, endWith);
 
         }
-
+        //Select s1 such that Follows (s1,s2)
         private bool ValidateSuchThatSection(List<string> splitedQuery, int beginIndex, int endIndex)
         {
             List<string> validateErrors = new List<string>();
+            List<string> resultSymbols = splitedQuery[beginIndex + 1].Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
+            //Follows
+            //(s1,s2)
+            for (int i = 0; i < resultSymbols.Count; i++)
+            {
+                RelationType relationType = _relTable.GetRelationType(resultSymbols[0]);
+                List<string> arguments = resultSymbols[1].Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
+                //(s1
+                //s2)
+                RelationArgumentType[] relationArgumentTypes = new RelationArgumentType[arguments.Count];
+                for (int i = 0; i < arguments.Count; i++)
+                {
+                    relationArgumentTypes[i] = arguments[i];
+                } 
 
+                if (_relTable.ValidateRelation(relationType, arguments.Count))
+                {
+
+                }
+            }
 
         }
 
