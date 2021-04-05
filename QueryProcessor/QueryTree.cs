@@ -7,13 +7,52 @@ using System.Text;
 
 namespace QueryProcessor
 {
-    internal class QueryTree
+    public class QueryTree
     {
-        private readonly SectionNode _rootNode;
+        private readonly SectionNode _rootNode = new SectionNode();
 
         public QueryTree()
         {
 
+        }
+
+        public void AddSuchThatNode(SectionNode suchThatNode)
+        {
+            if (suchThatNode == null) return;
+            Node existingResultNode = _rootNode.Childrens.FirstOrDefault(f => f.NodeType == NodeType.SUCH_THAT);
+            if (existingResultNode != null)
+            {
+                _rootNode.Childrens.Remove(existingResultNode);
+            }
+
+            suchThatNode.NodeType = NodeType.SUCH_THAT;
+            _rootNode.Childrens.Add(suchThatNode);
+        }
+
+        public void AddResultNode(SectionNode resultNode)
+        {
+            if (resultNode == null) return;
+            Node existingResultNode = _rootNode.Childrens.FirstOrDefault(f => f.NodeType == NodeType.RESULT);
+            if (existingResultNode != null)
+            {
+                _rootNode.Childrens.Remove(existingResultNode);
+            }
+
+            resultNode.NodeType = NodeType.RESULT;
+            _rootNode.Childrens.Add(resultNode);
+        }
+
+        public void AddWithNode(SectionNode withNode)
+        {
+            if (withNode == null) return;
+            Node existingWithNode = _rootNode.Childrens.FirstOrDefault(f => f.NodeType == NodeType.WITH);
+            if (existingWithNode != null)
+            {
+                _rootNode.Childrens.Remove(existingWithNode);
+            }
+
+            withNode.NodeType = NodeType.WITH;
+            _rootNode.Childrens.Add(withNode);
         }
 
         public List<AttributeNode> GetAttributeNodes()

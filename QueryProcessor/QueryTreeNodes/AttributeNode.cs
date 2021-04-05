@@ -5,10 +5,18 @@ using System.Text;
 
 namespace QueryProcessor.QueryTreeNodes
 {
-    internal class AttributeNode : Node
+    public class AttributeNode : Node
     {
-        internal AttributeType AttributeType { get; set; }
-        internal object AttributeValue { get; set; }
-        internal SynonimNode SynonimNode { get; set; }
+        public string AttributeType { get; set; }
+        public string AttributeValue { get; set; }
+        public SynonimNode SynonimNode { get; set; }
+
+        public AttributeNode(string attributeType, string attributeValue, SynonimNode synonimNode)
+        {
+            NodeType = NodeType.ATTRIBUTE;
+            AttributeType = attributeType;
+            AttributeValue = attributeValue;
+            SynonimNode = synonimNode;
+        }
     }
 }

@@ -4,8 +4,8 @@ using System.Text;
 
 namespace QueryProcessor.QueryTreeNodes
 {
-    internal class SectionNode : Node
+    public class SectionNode : Node
     {
-        internal List<Node> Childrens { get; set; } = new List<Node>();
+        public List<Node> Childrens { get; set; } = new List<Node>();
     }
 }

@@ -5,9 +5,14 @@ using System.Text;
 
 namespace QueryProcessor.QueryTreeNodes
 {
-    internal class RelationNode : Node
+    public class RelationNode : Node
     {
-        internal RelationType RelationType { get; set; }
-        internal List<Node> Arguments { get; set; } = new List<Node>();
+        public RelationType RelationType { get; set; }
+        public List<ArgumentNode> Arguments { get; set; } = new List<ArgumentNode>();
+
+        public RelationNode()
+        {
+            NodeType = NodeType.RELATION;
+        }
     }
 }

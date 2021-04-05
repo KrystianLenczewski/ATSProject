@@ -11,7 +11,7 @@ namespace QueryProcessor
 
         public QueryEvaluator()
         {
-            _pkbStore = PKBStore.Instance;
+            //_pkbStore = PKBStore.Instance;
         }
 
         public string GetResultsRaw(QueryTree queryTree)

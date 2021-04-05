@@ -5,9 +5,16 @@ using System.Text;
 
 namespace QueryProcessor.QueryTreeNodes
 {
-    internal class SynonimNode : Node
+    public class SynonimNode : Node
     {
         public SynonimType SynonimType { get; set; }
         public string Name { get; set; }
+
+        public SynonimNode(SynonimType synonimType, string name)
+        {
+            NodeType = NodeType.ATTRIBUTE;
+            SynonimType = synonimType;
+            Name = name;
+        }
     }
 }
