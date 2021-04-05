@@ -13,19 +13,33 @@ namespace QueryProcessor
         private readonly QueryValidator _queryValidator = new QueryValidator();
         private RelTable.RelTable _relTable = new RelTable.RelTable();
         private SymbolTable _symbolTable;
+        private List<string> validationErrors = new List<string>();
 
         public QueryTree ParseQuery(string query)
         {
-            _queryValidator.ValidateQuery(query, out List<string> validationErrors);
-            _symbolTable = new SymbolTable(query);
-            QueryTree queryTree = new QueryTree();
-            queryTree.AddResultNode(ExtractResult(query));
-            queryTree.AddSuchThatNode(ExtractSuchThatElements(query));
-
-            return queryTree;
+            if (_queryValidator.ValidateQuery(query, out List<string> validationErrors))
+            {
+                _symbolTable = new SymbolTable(query);
+                QueryTree queryTree = new QueryTree();
+                queryTree.AddResultNode(ExtractResult(query));
+                queryTree.AddSuchThatNode(ExtractSuchThatElements(query));
+                queryTree.AddWithNode(ExtractWith(query));
+                return queryTree;
+            }
+            else
+            {
+                this.validationErrors = validationErrors;
+                throw new Exception("Zapytanie PQL jest nieprawidłowe.");
+            }
+                
         }
 
-        internal SectionNode ExtractSuchThatElements(string query)
+        public List<string> GetValidationErrors()
+        {
+            return validationErrors;
+        }
+
+        private SectionNode ExtractSuchThatElements(string query)
         {
             List<string> splitedQuery = query.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
             splitedQuery.ForEach(x => x.Trim().ToLower());
@@ -56,7 +70,7 @@ namespace QueryProcessor
             return null;
         }
 
-        internal SectionNode ExtractResult(string query)
+        private SectionNode ExtractResult(string query)
         {
             List<string> splitedQuery = query.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
             splitedQuery.ForEach(x => x.Trim().ToLower());
@@ -71,6 +85,30 @@ namespace QueryProcessor
             }
 
             return resultNode;
+        }
+
+        private SectionNode ExtractWith(string query)
+        {
+            List<string> splitedQuery = query.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
+            splitedQuery.ForEach(x => x.Trim().ToLower());
+            int withIndex = splitedQuery.IndexOf(QueryElement.With.ToLower());
+            int patternIndex = splitedQuery.IndexOf(QueryElement.Pattern.ToLower());
+            int endWith = patternIndex == -1 ? splitedQuery.Count : patternIndex;
+
+            if (withIndex + 1 != endWith && withIndex!=-1)
+            {
+                string withCondition = splitedQuery[withIndex + 1];
+                List<string> splittedWithCondition = withCondition.Split('.', StringSplitOptions.RemoveEmptyEntries).ToList();
+                string synonimName = splittedWithCondition?.ElementAtOrDefault(0);//s2
+                string[] attributeWithValue = splittedWithCondition?.ElementAtOrDefault(1)?.Split('=', StringSplitOptions.RemoveEmptyEntries);//stmt#, 5
+                SectionNode withNode = new SectionNode { NodeType = NodeType.WITH };
+                SynonimNode synonimNode = new SynonimNode(_symbolTable.GetSynonimType(synonimName), synonimName);
+
+                AttributeNode attributeNode = new AttributeNode(attributeWithValue[0], attributeWithValue[1], synonimNode);
+                withNode.Childrens.Add(attributeNode);
+                return withNode;
+            }
+            else return null;
         }
 
         private int GetIndexForSuchThat(List<string> splittedQuery)
@@ -92,5 +130,7 @@ namespace QueryProcessor
             endSuchThat = endSuchThat == -1 ? splittedQuery.Count : endSuchThat;
             return endSuchThat;
         }
+
+   
     }
 }

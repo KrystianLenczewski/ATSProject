@@ -37,6 +37,7 @@ namespace QueryProcessor.RelTable
                     RelationArgumentType.Assign, RelationArgumentType.While, RelationArgumentType.String, RelationArgumentType.Integer, RelationArgumentType.Call, RelationArgumentType.If };
             List<RelationArgumentType> usesArg2Types = new List<RelationArgumentType> { RelationArgumentType.Variable, RelationArgumentType.Discard, RelationArgumentType.String };
 
+
             //USES            
             _relTableItems.Add(new RelTableItem(RelationType.USES, 2, usesArg1Types, usesArg2Types));
 
@@ -110,6 +111,9 @@ namespace QueryProcessor.RelTable
         {
             if (relationName.Equals("Modifies", StringComparison.OrdinalIgnoreCase)) return RelationType.MODIFIES;
             else if (relationName.Equals("Follows", StringComparison.OrdinalIgnoreCase)) return RelationType.FOLLOWS;
+            else if (relationName.Equals("Follows*", StringComparison.OrdinalIgnoreCase)) return RelationType.FOLLOWS_STAR;
+            else if (relationName.Equals("Parent", StringComparison.OrdinalIgnoreCase)) return RelationType.PARENT;
+            else if (relationName.Equals("Parent*", StringComparison.OrdinalIgnoreCase)) return RelationType.PARENT_STAR;
             else throw new ArgumentException("Nie rozpoznano relacji.");
         }
     }

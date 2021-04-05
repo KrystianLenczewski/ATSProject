@@ -32,10 +32,19 @@ namespace QueryProcessor
         List<string> validationErrors = new List<string>();
         internal bool ValidateQuery(string query, out List<string> validationErrors)
         {
-            symbolTable = new SymbolTable(query);
-            bool result = ValidateQueryStructure(query);
-            validationErrors = this.validationErrors.Distinct().ToList();
-            return result;
+            try
+            {
+                symbolTable = new SymbolTable(query);
+                bool result = ValidateQueryStructure(query);
+                validationErrors = this.validationErrors.Distinct().ToList();
+                return result;
+            }
+            catch (Exception)
+            {
+                validationErrors = new List<string>();
+                validationErrors.Add("Zapytanie jest nieprawidłowe - nieprawidłowa składnia");
+                return false;
+            }
 
         }
         private bool ValidateQueryStructure(string query)
@@ -114,9 +123,9 @@ namespace QueryProcessor
                 if (beginIndex + 1 != endIndex)
                 {
                     string withCondition = splitedQuery[beginIndex + 1];
-                    List<string> splittedWithConfition = withCondition.Split('.', StringSplitOptions.RemoveEmptyEntries).ToList();
-                    string synonimName = splittedWithConfition?.ElementAtOrDefault(0);
-                    string[] attributeWithValue = splittedWithConfition?.ElementAtOrDefault(1)?.Split('=', StringSplitOptions.RemoveEmptyEntries);
+                    List<string> splittedWithCondition = withCondition.Split('.', StringSplitOptions.RemoveEmptyEntries).ToList();
+                    string synonimName = splittedWithCondition?.ElementAtOrDefault(0);
+                    string[] attributeWithValue = splittedWithCondition?.ElementAtOrDefault(1)?.Split('=', StringSplitOptions.RemoveEmptyEntries);
 
                     if (string.IsNullOrEmpty(synonimName) || attributeWithValue?.Length != 2)
                         validateErrors.Add("Atrybuty po klauzuli With są nieprawidłowe.");

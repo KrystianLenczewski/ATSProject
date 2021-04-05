@@ -12,6 +12,7 @@ namespace QueryProcessor.QueryTreeNodes
 
         public SynonimNode(SynonimType synonimType, string name)
         {
+            NodeType = NodeType.ATTRIBUTE;
             SynonimType = synonimType;
             Name = name;
         }

@@ -14,6 +14,6 @@ namespace QueryProcessor.Enums
         Assign,
         Variable,
         Call,
-
+        Constant
     }
 }

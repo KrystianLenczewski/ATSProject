@@ -4,9 +4,9 @@ using System.Text;
 
 namespace QueryProcessor.Enums
 {
-    public enum AttributeType
+    public struct AttributeType
     {
-        STMT,
-        VARNAME
+        public const string STMT = "stmt#";
+        public const string VARNAME = "varName";  
     }
 }

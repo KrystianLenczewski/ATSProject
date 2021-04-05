@@ -13,7 +13,7 @@ namespace ConsoleUI
         static void Main(string[] args)
         {
             QueryPreprocessor queryPreprocessor = new QueryPreprocessor();
-            string query = "assign a;variable v;procedure p; select p,a,v such that Follows (v,a)";
+            string query = "stmt s,s1; select s with s1.stmt#=11";
             QueryTree queryTree = queryPreprocessor.ParseQuery(query);
         }
     }

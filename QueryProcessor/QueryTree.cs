@@ -18,6 +18,7 @@ namespace QueryProcessor
 
         public void AddSuchThatNode(SectionNode suchThatNode)
         {
+            if (suchThatNode == null) return;
             Node existingResultNode = _rootNode.Childrens.FirstOrDefault(f => f.NodeType == NodeType.SUCH_THAT);
             if (existingResultNode != null)
             {
@@ -30,6 +31,7 @@ namespace QueryProcessor
 
         public void AddResultNode(SectionNode resultNode)
         {
+            if (resultNode == null) return;
             Node existingResultNode = _rootNode.Childrens.FirstOrDefault(f => f.NodeType == NodeType.RESULT);
             if (existingResultNode != null)
             {
@@ -38,6 +40,19 @@ namespace QueryProcessor
 
             resultNode.NodeType = NodeType.RESULT;
             _rootNode.Childrens.Add(resultNode);
+        }
+
+        public void AddWithNode(SectionNode withNode)
+        {
+            if (withNode == null) return;
+            Node existingWithNode = _rootNode.Childrens.FirstOrDefault(f => f.NodeType == NodeType.WITH);
+            if (existingWithNode != null)
+            {
+                _rootNode.Childrens.Remove(existingWithNode);
+            }
+
+            withNode.NodeType = NodeType.WITH;
+            _rootNode.Childrens.Add(withNode);
         }
 
         public List<AttributeNode> GetAttributeNodes()

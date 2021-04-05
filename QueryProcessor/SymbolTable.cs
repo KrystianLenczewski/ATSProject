@@ -63,6 +63,8 @@ namespace QueryProcessor
                 return relationArgumentType;
             if (int.TryParse(relationArgumentName, out _))
                 return RelationArgumentType.Integer;
+            if (relationArgumentName.StartsWith("\"") && relationArgumentName.EndsWith("\""))
+                return RelationArgumentType.String;
 
             throw new ArgumentException($"Argument: {relationArgumentName} jest używany w zapytaniu lecz nie był zadeklarowany");
         }
@@ -79,6 +81,7 @@ namespace QueryProcessor
                 if (relationArgumentType == RelationArgumentType.Procedure) return SynonimType.Procedure;
                 if (relationArgumentType == RelationArgumentType.Statement) return SynonimType.Statement;
                 if (relationArgumentType == RelationArgumentType.Variable) return SynonimType.Variable;
+                if (relationArgumentType == RelationArgumentType.Constant) return SynonimType.Constant;
 
             }
 

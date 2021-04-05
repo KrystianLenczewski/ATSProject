@@ -7,8 +7,16 @@ namespace QueryProcessor.QueryTreeNodes
 {
     public class AttributeNode : Node
     {
-        public AttributeType AttributeType { get; set; }
-        public object AttributeValue { get; set; }
+        public string AttributeType { get; set; }
+        public string AttributeValue { get; set; }
         public SynonimNode SynonimNode { get; set; }
+
+        public AttributeNode(string attributeType, string attributeValue, SynonimNode synonimNode)
+        {
+            NodeType = NodeType.ATTRIBUTE;
+            AttributeType = attributeType;
+            AttributeValue = attributeValue;
+            SynonimNode = synonimNode;
+        }
     }
 }
