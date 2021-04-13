@@ -3,6 +3,11 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
+    <StartupObject></StartupObject>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PKB\PKB.csproj" />
+    <ProjectReference Include="..\QueryProcessor\QueryProcessor.csproj" />
     <ProjectReference Include="..\SPAFrontend\SPAFrontend.csproj" />
   </ItemGroup>
 
