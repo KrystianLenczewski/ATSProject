@@ -9,5 +9,7 @@ namespace PKB
         public List<KeyValuePair<ExpressionModel, ExpressionModel>> FollowsList { get; set; } = new List<KeyValuePair<ExpressionModel, ExpressionModel>>();
         public List<KeyValuePair<ExpressionModel, ExpressionModel>> UsesList { get; set; }
         public List<ParentModel> ParentList { get; set; } = new List<ParentModel>();
+
+        // TODO: PROC_TABLE & VAR_TABLE
     }
 }
