@@ -5,11 +5,9 @@ namespace PKB
 {
     public interface IPKBStore
     {
-        void SetFollows(ExpressionModel s1, ExpressionModel s2);
-        void SetParent(ExpressionModel s1, ExpressionModel s2);
-
-        List<KeyValuePair<ExpressionModel, ExpressionModel>> ModifiesList { get; }
-        List<KeyValuePair<ExpressionModel, ExpressionModel>> FollowsList { get; }
-        List<ParentModel> ParentList { get; }
+        List<KeyValuePair<ExpressionModel, ExpressionModel>> ModifiesList { get; set; }
+        List<KeyValuePair<ExpressionModel, ExpressionModel>> FollowsList { get; set; }
+        List<KeyValuePair<ExpressionModel, ExpressionModel>> UsesList { get; set; }
+        List<ParentModel> ParentList { get; set; }
     }
 }

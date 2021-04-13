@@ -6,7 +6,7 @@ namespace PKB
 {
     public static class PKBParserServices
     {
-        public static void SetFollowsAction(this IPKBStore pkb, ExpressionModel s1, ExpressionModel s2)
+        public static void SetFollows(this IPKBStore pkb, ExpressionModel s1, ExpressionModel s2)
         {
             var stmt1 = new List<ExpressionType> { ExpressionType.WHILE, ExpressionType.ASSIGN }.Contains(s1.Type);
             var stmt2 = new List<ExpressionType> { ExpressionType.WHILE, ExpressionType.ASSIGN }.Contains(s2.Type);
@@ -15,12 +15,12 @@ namespace PKB
             pkb.FollowsList.Add(value);
         }
 
-        public static void SetParentAction(this IPKBStore pkb, ExpressionModel s1, ExpressionModel s2)
+        public static void SetParent(this IPKBStore pkb, ExpressionModel s1, ExpressionModel s2)
         {
             throw new NotImplementedException();
         }
 
-        public static void SetParentAction(this IPKBStore pkb, ExpressionModel s1, ExpressionModel s2, int index)
+        public static void SetParent(this IPKBStore pkb, ExpressionModel s1, ExpressionModel s2, int index)
         {
             var value = KeyValuePair.Create(s1, s2);
             if (IsValidParentProcedure(s1.Type, s2.Type, index) || IsValidParentStmtLst(s1.Type, s2.Type, index))
@@ -29,6 +29,16 @@ namespace PKB
             }
 
             // TODO: ...
+        }
+
+        public static void SetModify(this IPKBStore pkb, ExpressionModel s1, ExpressionModel s2)
+        {
+
+        }
+
+        public static void SetUses(this IPKBStore pkb, ExpressionModel s1, ExpressionModel s2)
+        {
+
         }
 
         private static bool IsValidParentProcedure(ExpressionType parentType, ExpressionType childType, int index) => (parentType == ExpressionType.PROCEDURE) && ((index == 0 && childType == ExpressionType.VAR) || (index == 1 && childType == ExpressionType.STMTLST));
