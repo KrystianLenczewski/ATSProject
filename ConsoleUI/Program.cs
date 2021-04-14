@@ -15,6 +15,9 @@ namespace ConsoleUI
             QueryPreprocessor queryPreprocessor = new QueryPreprocessor();
             string query = "stmt s,s1; select s with s1.stmt#=11";
             QueryTree queryTree = queryPreprocessor.ParseQuery(query);
+            QueryEvaluator queryEvaluator = new QueryEvaluator();
+            queryEvaluator.GetQueryResultsRaw(queryTree);
+
         }
     }
 }

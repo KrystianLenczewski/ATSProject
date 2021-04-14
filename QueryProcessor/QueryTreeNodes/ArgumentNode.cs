@@ -20,5 +20,18 @@ namespace QueryProcessor.QueryTreeNodes
             if(relationArgumentType == RelationArgumentType.Integer || relationArgumentType == RelationArgumentType.String)
                 Value = name;
         }
+
+        public bool IsStatement()
+        {
+            bool isDiscard = RelationArgumentType == RelationArgumentType.Discard;
+            bool isConstant = RelationArgumentType == RelationArgumentType.Constant;
+            bool isInteger = RelationArgumentType == RelationArgumentType.Integer;
+            bool isString = RelationArgumentType == RelationArgumentType.String;
+            bool isProgLine = RelationArgumentType == RelationArgumentType.Prog_line;
+            bool isVariable = RelationArgumentType == RelationArgumentType.Variable;
+            bool isProcedure = RelationArgumentType == RelationArgumentType.Procedure;
+
+            return !(isDiscard || isConstant || isInteger || isString || isProgLine || isVariable || isProcedure);
+        }
     }
 }
