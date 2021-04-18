@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,10 +14,10 @@ namespace ConsoleUI
         static void Main(string[] args)
         {
             QueryPreprocessor queryPreprocessor = new QueryPreprocessor();
-            string query = "stmt s,s1; select s with s1.stmt#=11";
+            string query = "assign s,s1; variable v; select s such that Modifies (s,v)";
             QueryTree queryTree = queryPreprocessor.ParseQuery(query);
             QueryEvaluator queryEvaluator = new QueryEvaluator();
-            queryEvaluator.GetQueryResultsRaw(queryTree);
+            List<object> queryResultsRaw = queryEvaluator.GetQueryResultsRaw(queryTree);
 
         }
     }

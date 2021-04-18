@@ -48,7 +48,7 @@ namespace PKB
         {
             throw new NotImplementedException();
         }
-        public static bool IsFollows(this IPKBStore pkb, ExpressionModel stmt1, ExpressionModel stmt2)
+        public static bool IsFollows(this IPKBStore pkb, Statement stmt1, Statement stmt2)
         {
             throw new NotImplementedException();
         }
