@@ -9,9 +9,9 @@ namespace PQLTestingConsole
         {
             var queryPreprocessor = new QueryPreprocessor();
             string query = "assign s,s1; variable v; select s such that Modifies (s,v)";
-            var queryTree = queryPreprocessor.ParseQuery(query);
-            var queryEvaluator = new QueryEvaluator();
-            List<object> queryResultsRaw = queryEvaluator.GetQueryResultsRaw(queryTree);
+            QueryTree queryTree = queryPreprocessor.ParseQuery(query);
+            QueryEvaluator queryEvaluator = new QueryEvaluator();
+            // List<object> queryResultsRaw = queryEvaluator.GetQueryResultsRaw(queryTree);
         }
     }
 }
