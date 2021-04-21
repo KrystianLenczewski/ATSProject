@@ -5,7 +5,7 @@ using System.Text;
 
 namespace QueryProcessor
 {
-    internal class QueryEvaluator
+    public class QueryEvaluator
     {
         private readonly PKBStore _pkbStore;
 

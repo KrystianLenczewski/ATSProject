@@ -1,5 +1,4 @@
-﻿using Shared;
-using Shared.PQLModels;
+﻿using Shared.PQLModels;
 using System;
 using System.Collections.Generic;
 
@@ -52,7 +51,5 @@ namespace PKB
         {
             throw new NotImplementedException();
         }
-
-
     }
 }

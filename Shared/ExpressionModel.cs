@@ -38,34 +38,31 @@
     {
         public ExpressionType Type { get; private set; }
         public string Name { get; private set; }
-        public int Index { get; set; }
+        public int Line { get; set; }
 
-        public ExpressionModel(FactorType type, string name)
+        public ExpressionModel(FactorType type, string name, int line)
         {
             Type = (ExpressionType)type;
             Name = name;
+            Line = line;
         }
 
-        public ExpressionModel(StatementType type)
+        public ExpressionModel(StatementType type, int line)
         {
             Type = (ExpressionType)type;
+            Line = line;
         }
 
-        public ExpressionModel(StatementType type, int index)
+        public ExpressionModel(SpecialType type, int line)
         {
             Type = (ExpressionType)type;
-            Index = index;
+            Line = line;
         }
 
-        public ExpressionModel(SpecialType type)
+        public ExpressionModel(OperationsType type, int line)
         {
             Type = (ExpressionType)type;
-        }
-
-        public ExpressionModel(OperationsType type, int index)
-        {
-            Type = (ExpressionType)type;
-            Index = index;
+            Line = line;
         }
     }
 }
