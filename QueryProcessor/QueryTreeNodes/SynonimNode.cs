@@ -16,5 +16,14 @@ namespace QueryProcessor.QueryTreeNodes
             SynonimType = synonimType;
             Name = name;
         }
+
+        internal bool IsStamement()
+        {
+            bool isConstant = SynonimType == SynonimType.Constant;
+            bool isVariable = SynonimType == SynonimType.Variable;
+            bool isProcedure = SynonimType == SynonimType.Procedure;
+
+            return !(isConstant || isVariable || isProcedure);
+        }
     }
 }

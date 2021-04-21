@@ -51,5 +51,64 @@ namespace PKB
         {
             throw new NotImplementedException();
         }
+
+        //next
+
+        public static List<Statement> GetNext(this IPKBStore pkb, Statement stmt1)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static List<Statement> GetNextStar(this IPKBStore pkb, Statement stmt1)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static List<Statement> GetPrevious(this IPKBStore pkb, Statement stmt1)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static List<Statement> GetPreviousStar(this IPKBStore pkb, Statement stmt1)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static bool IsNext(this IPKBStore pkb, Statement stmt1, Statement stmt2)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static bool IsNextStar(this IPKBStore pkb, Statement stmt1, Statement stmt2)
+        {
+            throw new NotImplementedException();
+        }
+
+        //Uses
+
+        public static List<Variable> GetUsed(this IPKBStore pkb, Statement statement)
+        {
+            throw new NotImplementedException();
+        }
+        public static List<Variable> GetUsed(this IPKBStore pkb, Procedure procedure)
+        {
+            throw new NotImplementedException();
+        }
+        public static List<Statement> GetUsesStatements(this IPKBStore pkb, Variable variable)
+        {
+            throw new NotImplementedException();
+        }
+        public static List<Procedure> GetUsesProcedures(this IPKBStore pkb, Variable variable)
+        {
+            throw new NotImplementedException();
+        }
+        public static bool IsUses(this IPKBStore pkb, Variable variable, Statement statement)
+        {
+            throw new NotImplementedException();
+        }
+        public static bool IsUses(this IPKBStore pkb, Variable variable, Procedure procedure)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
