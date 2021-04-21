@@ -69,12 +69,24 @@ namespace QueryProcessor
             return relationNodes.Select(s => s as RelationNode).Where(w => w != null).ToList();
         }
 
-        public List<Node> GetResultNodeChildrens()
+        public List<SynonimNode> GetResultNodeChildrens()
         {
             SectionNode resultNode = GetSectionNode(NodeType.RESULT);
-            return resultNode?.Childrens ?? new List<Node>();
+            return resultNode?.Childrens.Select(s=>s as SynonimNode).ToList() ?? new List<SynonimNode>();
+        }
+
+        public bool IsResultBoolean()
+        {
+            List<SynonimNode> resultNodes = GetResultNodeChildrens();
+            foreach (var item in resultNodes)
+            {
+                if (item.SynonimType==SynonimType.BOOLEAN) return true;
+
+            }
+            return false;
         }
 
         private SectionNode GetSectionNode(NodeType nodeType) => _rootNode.Childrens.FirstOrDefault(f => f.NodeType == nodeType) as SectionNode;
+   
     }
 }
