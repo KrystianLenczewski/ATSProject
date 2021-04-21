@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace QueryProcessor
+namespace QueryProcessor.QueryProcessing
 {
     internal class QueryValidator
     {
