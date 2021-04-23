@@ -98,6 +98,41 @@ namespace QueryProcessor.QueryProcessing
             if (withIndex + 1 != endWith && withIndex!=-1)
             {
                 string withCondition = splitedQuery[withIndex + 1];
+                List<string> splittedWithCondition = withCondition.Split('=', StringSplitOptions.RemoveEmptyEntries).ToList();
+                string leftSide = splittedWithCondition[0];
+                string rightSide = splittedWithCondition[1];
+
+                SectionNode withNode = new SectionNode { NodeType = NodeType.WITH };
+                string[] splittedLeftSide = leftSide.Split('.', StringSplitOptions.RemoveEmptyEntries);
+                SynonimNode leftSideSynonimNode = new SynonimNode(_symbolTable.GetSynonimType(splittedLeftSide[0]), splittedLeftSide[0]);
+                AttributeNode leftSideAttributeNode;
+                if (IsConst(rightSide))
+                    leftSideAttributeNode = new AttributeNode(splittedLeftSide[1], rightSide, leftSideSynonimNode);
+                else
+                {
+                    string[] splittedRigtSide = rightSide.Split('.', StringSplitOptions.RemoveEmptyEntries);
+                    SynonimNode rightSideSynonimNode = new SynonimNode(_symbolTable.GetSynonimType(splittedRigtSide[0]), splittedRigtSide[0]);
+                    AttributeNode rightSideAttributeNode = new AttributeNode(splittedRigtSide[1], rightSideSynonimNode);
+                    leftSideAttributeNode = new AttributeNode(splittedLeftSide[1], rightSideAttributeNode, leftSideSynonimNode);
+                    rightSideAttributeNode.AttributeValue = leftSideAttributeNode;
+                }
+                withNode.Childrens.Add(leftSideAttributeNode);
+                return withNode;
+            }
+            else return null;
+        }
+
+        private SectionNode ExtractWith_back(string query)
+        {
+            List<string> splitedQuery = query.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
+            splitedQuery.ForEach(x => x.Trim().ToLower());
+            int withIndex = splitedQuery.IndexOf(QueryElement.With.ToLower());
+            int patternIndex = splitedQuery.IndexOf(QueryElement.Pattern.ToLower());
+            int endWith = patternIndex == -1 ? splitedQuery.Count : patternIndex;
+
+            if (withIndex + 1 != endWith && withIndex != -1)
+            {
+                string withCondition = splitedQuery[withIndex + 1];
                 List<string> splittedWithCondition = withCondition.Split('.', StringSplitOptions.RemoveEmptyEntries).ToList();
                 string synonimName = splittedWithCondition?.ElementAtOrDefault(0);//s2
                 string[] attributeWithValue = splittedWithCondition?.ElementAtOrDefault(1)?.Split('=', StringSplitOptions.RemoveEmptyEntries);//stmt#, 5
@@ -131,6 +166,13 @@ namespace QueryProcessor.QueryProcessing
             return endSuchThat;
         }
 
-   
+        private bool IsConst(string phrase)
+        {
+            if (int.TryParse(phrase, out _))
+                return true;
+            phrase = phrase.Replace("\"", "");
+            return !phrase.Any(ch => !char.IsLetter(ch));
+        }
+
     }
 }

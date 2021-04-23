@@ -22,6 +22,7 @@ namespace QueryProcessor.QueryProcessing
 
         public List<object> GetQueryResultsRaw(QueryTree queryTree)
         {
+            queryTree.PrepareTreeForQueryEvaluator();
             List<RelationNode> relationNodes = queryTree.GetRelationNodes();
             List<SynonimNode> resultChildrens = queryTree.GetResultNodeChildrens();
 
