@@ -72,21 +72,59 @@ namespace QueryProcessor.QueryProcessing
         public List<SynonimNode> GetResultNodeChildrens()
         {
             SectionNode resultNode = GetSectionNode(NodeType.RESULT);
-            return resultNode?.Childrens.Select(s=>s as SynonimNode).ToList() ?? new List<SynonimNode>();
+            return resultNode?.Childrens.Select(s => s as SynonimNode).ToList() ?? new List<SynonimNode>();
         }
 
         public bool IsResultBoolean()
         {
-            List<SynonimNode> resultNodes = GetResultNodeChildrens();
-            foreach (var item in resultNodes)
+            foreach (var resultNode in GetResultNodeChildrens())
             {
-                if (item.SynonimType==SynonimType.BOOLEAN) return true;
-
+                if (resultNode.SynonimType == SynonimType.BOOLEAN)
+                    return true;
             }
             return false;
         }
 
+        public List<AttributeNode> GetRelatedAttributeNodes()
+        {
+            SectionNode withNode = GetSectionNode(NodeType.WITH);
+            List<AttributeNode> attributeNodes = withNode?.Childrens?.Select(s => s as AttributeNode)?.Where(w => w != null)?.ToList();
+            return attributeNodes.Where(w => w.AttributeValue is AttributeNode).ToList();
+        }
+
+        public void PrepareTreeForQueryEvaluator()
+        {
+            MoveWithInfoToRelationArguments();
+        }
+
+        private void MoveWithInfoToRelationArguments()
+        {
+            SectionNode withNode = GetSectionNode(NodeType.WITH);
+            if (withNode != null)
+            {
+                List<AttributeNode> attributeNodes = withNode?.Childrens?.Select(s => s as AttributeNode)?.Where(w => w != null)?.ToList();
+                foreach (AttributeNode attributeNode in attributeNodes)
+                    AddInfoFromWithToRelationsArguments(attributeNode);
+            }
+        }
+
+        private void AddInfoFromWithToRelationsArguments(AttributeNode attributeNode)
+        {
+            if (!(attributeNode.AttributeValue is AttributeNode))
+            {
+                string attributeSynonimName = attributeNode.SynonimNode.Name;
+                foreach (RelationNode relationNode in GetRelationNodes())
+                {
+                    foreach (ArgumentNode relationArgument in relationNode.Arguments)
+                    {
+                        if (relationArgument.Name == attributeSynonimName)
+                            relationArgument.Value = attributeNode.AttributeValue?.ToString();
+                    }
+                }
+            }
+        }
+
         private SectionNode GetSectionNode(NodeType nodeType) => _rootNode.Childrens.FirstOrDefault(f => f.NodeType == nodeType) as SectionNode;
-   
+
     }
 }

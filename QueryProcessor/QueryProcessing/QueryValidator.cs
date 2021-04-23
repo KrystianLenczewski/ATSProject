@@ -9,16 +9,23 @@ namespace QueryProcessor.QueryProcessing
 {
     internal class QueryValidator
     {
-        private RelTable.RelTable _relTable = new RelTable.RelTable();
+        private readonly RelTable.RelTable _relTable = new RelTable.RelTable();
         private SymbolTable symbolTable;
 
-        private readonly Dictionary<RelationArgumentType, string> attributeToSynonim = new Dictionary<RelationArgumentType, string>
+        private readonly Dictionary<RelationArgumentType, string> _attributeToSynonim = new Dictionary<RelationArgumentType, string>
         {
             [RelationArgumentType.Procedure] = "procName",
             [RelationArgumentType.Variable] = "varName",
             [RelationArgumentType.Constant] = "value",
             [RelationArgumentType.Statement] = "stmt#",
             [RelationArgumentType.Assign] = "stmt#"
+        };
+
+        private readonly Dictionary<string, List<string>> _availableAttributeComparison = new Dictionary<string, List<string>>
+        {
+            ["procName"] = new List<string> { "procName", "varName" },
+            ["varName"] = new List<string> { "procName", "varName" },
+            ["stmt#"] = new List<string> { "stmt#", "value" }
         };
 
         private readonly Dictionary<string, RelationArgumentType> attributeToType = new Dictionary<string, RelationArgumentType>
@@ -123,28 +130,22 @@ namespace QueryProcessor.QueryProcessing
                 if (beginIndex + 1 != endIndex)
                 {
                     string withCondition = splitedQuery[beginIndex + 1];
-                    List<string> splittedWithCondition = withCondition.Split('.', StringSplitOptions.RemoveEmptyEntries).ToList();
-                    string synonimName = splittedWithCondition?.ElementAtOrDefault(0);
-                    string[] attributeWithValue = splittedWithCondition?.ElementAtOrDefault(1)?.Split('=', StringSplitOptions.RemoveEmptyEntries);
-
-                    if (string.IsNullOrEmpty(synonimName) || attributeWithValue?.Length != 2)
-                        validateErrors.Add("Atrybuty po klauzuli With są nieprawidłowe.");
-                    else
+                    string[] splittedWithCondition = withCondition.Split('=', StringSplitOptions.RemoveEmptyEntries);
+                    if (splittedWithCondition.Length == 2)
                     {
-                        RelationArgumentType synonimType = symbolTable.GetRelationArgumentType(synonimName);
-                        if (attributeToSynonim.TryGetValue(synonimType, out string attributeName))
+                        string leftSide = splittedWithCondition.ElementAtOrDefault(0);
+                        string rightSide = splittedWithCondition.ElementAtOrDefault(1);
+                        if (ValidateAttributePhrase(leftSide))
                         {
-                            if (attributeName.Equals(attributeWithValue[0], StringComparison.OrdinalIgnoreCase))
+                            if (IsConst(rightSide) || ValidateAttributePhrase(rightSide))
                             {
-                                if (!ValidateAttributeValueType(attributeToType[attributeName.ToLower()], attributeWithValue[1]))
-                                    validateErrors.Add("Wartość atrybutu ma nieprawidłowy typ.");
+                                if (!ValidateComparison(leftSide, rightSide))
+                                    validateErrors.Add("Błędne przyrównanie w klauzuli with.");
                             }
-                            else
-                                validateErrors.Add("Błędy atrybut dla synonimu w klauzuli With.");
                         }
-                        else
-                            validateErrors.Add("Dany synonim nie ma zdefiniowanych atrybutów po klauzuli With.");
                     }
+                    else
+                        validateErrors.Add("Atrybuty po klauzuli With są nieprawidłowe.");
                 }
             }
             catch (ArgumentException e)
@@ -152,7 +153,7 @@ namespace QueryProcessor.QueryProcessing
                 validateErrors.Add(e.Message);
             }
 
-            this.validationErrors.AddRange(validateErrors);
+            validationErrors.AddRange(validateErrors);
             return validateErrors.Count == 0;
         }
 
@@ -191,6 +192,55 @@ namespace QueryProcessor.QueryProcessing
                 return int.TryParse(attributeValue, out _);
             else
                 return attributeValue.StartsWith("\"") && attributeValue.EndsWith("\"");
+        }
+
+        private bool ValidateAttributePhrase(string attributePhrase)
+        {
+            string[] splittedAttributePhrase = attributePhrase.Split('.', StringSplitOptions.RemoveEmptyEntries);
+            string synonimName = splittedAttributePhrase?.ElementAtOrDefault(0);
+            string attribute = splittedAttributePhrase?.ElementAtOrDefault(1);
+            if (string.IsNullOrEmpty(synonimName) || string.IsNullOrEmpty(attribute))
+                throw new Exception("Atrybuty po klauzuli With są nieprawidłowe.");
+
+            RelationArgumentType synonimType = symbolTable.GetRelationArgumentType(synonimName);
+
+            if (_attributeToSynonim.TryGetValue(synonimType, out string attributeName))
+            {
+                if (!attributeName.Equals(attribute, StringComparison.OrdinalIgnoreCase))
+                    throw new Exception("Błędy atrybut dla synonimu w klauzuli With.");
+            }
+            else
+                throw new Exception("Dany synonim nie ma zdefiniowanych atrybutów po klauzuli With.");
+
+            return true;
+        }
+
+        private bool IsConst(string phrase)
+        {
+            if (int.TryParse(phrase, out _))
+                return true;
+            phrase = phrase.Replace("\"", "");
+            return !phrase.Any(ch => !char.IsLetter(ch));
+        }
+
+        private bool ValidateComparison(string leftSide, string rightSide)
+        {
+            string[] splittedLeftSide = leftSide.Split('.', StringSplitOptions.RemoveEmptyEntries);
+            string leftSideAttributeName = splittedLeftSide.ElementAtOrDefault(1);
+
+            if (IsConst(rightSide))
+            {
+                return ValidateAttributeValueType(attributeToType[leftSideAttributeName.ToLower()], rightSide);
+            }
+            else if (ValidateAttributePhrase(rightSide))
+            {
+                string[] splittedRightSide = rightSide.Split('.', StringSplitOptions.RemoveEmptyEntries);
+                string rightSideAttributeName = splittedRightSide.ElementAtOrDefault(1);
+
+                List<string> availableComparisonAttributes = _availableAttributeComparison[leftSideAttributeName];
+                return availableComparisonAttributes.Contains(rightSideAttributeName);
+            }
+            return false;
         }
     }
 }
