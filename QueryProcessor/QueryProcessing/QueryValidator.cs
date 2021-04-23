@@ -35,8 +35,7 @@ namespace QueryProcessor.QueryProcessing
             ["value"] = RelationArgumentType.Integer,
             ["stmt#"] = RelationArgumentType.Integer
         };
-
-        List<string> validationErrors = new List<string>();
+        private readonly List<string> validationErrors = new List<string>();
         internal bool ValidateQuery(string query, out List<string> validationErrors)
         {
             try
@@ -124,6 +123,20 @@ namespace QueryProcessor.QueryProcessing
 
         private bool ValidateWithSection(List<string> splitedQuery, int beginIndex, int endIndex)
         {
+            //select
+            //p
+            //such
+            //that
+            //Modifies(p,v)
+            //and
+            //Follows(p,v)
+            //with
+            //v.varname=hhh
+            //and
+            //p.procname=v.varname
+            //pattern
+            //(_x+y_)
+
             List<string> validateErrors = new List<string>();
             try
             {
@@ -131,6 +144,9 @@ namespace QueryProcessor.QueryProcessing
                 {
                     string withCondition = splitedQuery[beginIndex + 1];
                     string[] splittedWithCondition = withCondition.Split('=', StringSplitOptions.RemoveEmptyEntries);
+                    //v.varName=s.stmt#
+                    //v.varname
+                    //222
                     if (splittedWithCondition.Length == 2)
                     {
                         string leftSide = splittedWithCondition.ElementAtOrDefault(0);
