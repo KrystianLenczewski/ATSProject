@@ -122,30 +122,6 @@ namespace QueryProcessor.QueryProcessing
             else return null;
         }
 
-        private SectionNode ExtractWith_back(string query)
-        {
-            List<string> splitedQuery = query.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
-            splitedQuery.ForEach(x => x.Trim().ToLower());
-            int withIndex = splitedQuery.IndexOf(QueryElement.With.ToLower());
-            int patternIndex = splitedQuery.IndexOf(QueryElement.Pattern.ToLower());
-            int endWith = patternIndex == -1 ? splitedQuery.Count : patternIndex;
-
-            if (withIndex + 1 != endWith && withIndex != -1)
-            {
-                string withCondition = splitedQuery[withIndex + 1];
-                List<string> splittedWithCondition = withCondition.Split('.', StringSplitOptions.RemoveEmptyEntries).ToList();
-                string synonimName = splittedWithCondition?.ElementAtOrDefault(0);//s2
-                string[] attributeWithValue = splittedWithCondition?.ElementAtOrDefault(1)?.Split('=', StringSplitOptions.RemoveEmptyEntries);//stmt#, 5
-                SectionNode withNode = new SectionNode { NodeType = NodeType.WITH };
-                SynonimNode synonimNode = new SynonimNode(_symbolTable.GetSynonimType(synonimName), synonimName);
-
-                AttributeNode attributeNode = new AttributeNode(attributeWithValue[0], attributeWithValue[1], synonimNode);
-                withNode.Childrens.Add(attributeNode);
-                return withNode;
-            }
-            else return null;
-        }
-
         private int GetIndexForSuchThat(List<string> splittedQuery)
         {
             int suchIndex = splittedQuery.IndexOf("such");
