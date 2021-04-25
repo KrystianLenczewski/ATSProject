@@ -5,6 +5,7 @@ using PKB;
 using Newtonsoft.Json.Linq;
 using System.IO;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace SPAFrontend
 {
@@ -18,6 +19,7 @@ namespace SPAFrontend
             {
                 string currentPath = "";
                 string line = "";
+
                 while ((line = reader.ReadLine()) != null)
                 {
                     if (line.Contains("procedure"))
@@ -36,6 +38,15 @@ namespace SPAFrontend
                         var obj2 = CreateObjectForPath(currentPath + ".rownum", (line.Split(' ')[0].Trim('.')));
                         final.Merge(obj2);
                         currentPath += ".stmtList";
+                    }
+                    else if (line.Contains("call"))
+                    {
+                        currentPath += ".call";
+                        var obj = CreateObjectForPath(currentPath + ".param", (line.Split(' ')[1]));
+                        final.Merge(obj);
+                        var obj2 = CreateObjectForPath(currentPath + ".rownum", (line.Split(' ')[0].Trim('.')));
+                        final.Merge(obj2);
+                        currentPath = currentPath.Remove(currentPath.LastIndexOf('.'));
                     }
                     else if (line.Contains("if"))
                     {
@@ -76,7 +87,7 @@ namespace SPAFrontend
                 Console.WriteLine(final);
             }
 
-            Console.Write(code);
+            //Console.Write(code);
         }
 
         private static JObject CreateObjectForPath(string target, object newValue)
