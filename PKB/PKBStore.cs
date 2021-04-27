@@ -10,6 +10,16 @@ namespace PKB
         public List<KeyValuePair<ExpressionModel, ExpressionModel>> UsesList { get; set; }
         public List<ParentModel> ParentList { get; set; } = new List<ParentModel>();
 
+        public override string ToString()
+        {
+            string x = "";
+            foreach (var y in ModifiesList)
+            {
+                x += $"{y.Key.Line} {y.Key.Name} {y.Key.Type} - {y.Value.Line} {y.Value.Name} {y.Value.Type}\n";
+            }
+            return x;
+        }
+
         // TODO: PROC_TABLE & VAR_TABLE
     }
 }

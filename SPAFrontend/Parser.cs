@@ -63,11 +63,20 @@ namespace SPAFrontend
                     }
                     else if (line.Contains(";") && !line.Contains("}"))
                     {
+                        Console.WriteLine("curr1\t" + currentPath);
                         var rownum = CreateObjectForPath(currentPath + ".assignment.rownum", (line.Split(' ')[0].Trim('.')));
                         final.Merge(rownum);
                         var variable = CreateObjectForPath(currentPath + ".assignment.variable", (line.Split(' ')[1].Split('=')[0].Trim()));
                         final.Merge(variable);
-                        ParseAssignment(line.Split(' ')[0] + " " + line.Remove(0, line.Split('.')[0].Length + 2).Replace(";", "").Replace(" ", ""), final, currentPath + ".assignment.value");
+
+                        string[] stmtTypePath = currentPath.Substring(0, currentPath.LastIndexOf('.')).Split('.');
+                        var rownumForSetModifies = final.SelectToken(currentPath.Substring(0, currentPath.LastIndexOf('.')) + ".rownum");
+                        if (stmtTypePath[stmtTypePath.Length - 1].Trim().Contains("while") && rownumForSetModifies != null && Int32.TryParse(rownumForSetModifies.ToString(), out int rn))
+                        {
+                            PKBParserServices.SetModify(pkb, new ExpressionModel(StatementType.WHILE, rn), new ExpressionModel(FactorType.VAR, line.Split(' ')[1].Split('=')[0].Trim(), Int32.Parse(line.Split(' ')[0].Trim('.'))));
+                        }
+
+                        ParseAssignment(pkb, line.Split(' ')[0] + " " + line.Remove(0, line.Split('.')[0].Length + 2).Replace(";", "").Replace(" ", ""), final, currentPath + ".assignment.value");
                     }
                     else
                     {
@@ -75,7 +84,14 @@ namespace SPAFrontend
                         final.Merge(rownum);
                         var variable = CreateObjectForPath(currentPath + ".assignment.variable", (line.Split(' ')[1].Split('=')[0].Trim()));
                         final.Merge(variable);
-                        ParseAssignment(line.Split(' ')[0] + " " + line.Remove(0, line.Split('.')[0].Length + 2).Replace("}", "").Replace(" ", "").Replace(";", ""), final, currentPath + ".assignment.value");
+
+                        string[] stmtTypePath = currentPath.Substring(0, currentPath.LastIndexOf('.')).Split('.');
+                        var rownumForSetModifies = final.SelectToken(currentPath.Substring(0, currentPath.LastIndexOf('.')) + ".rownum");
+                        if (stmtTypePath[stmtTypePath.Length - 1].Trim().Contains("while") && rownumForSetModifies != null && Int32.TryParse(rownumForSetModifies.ToString(), out int rn))
+                        {
+                            PKBParserServices.SetModify(pkb, new ExpressionModel(StatementType.WHILE, rn), new ExpressionModel(FactorType.VAR, line.Split(' ')[1].Split('=')[0].Trim(), Int32.Parse(line.Split(' ')[0].Trim('.'))));
+                        }
+                        ParseAssignment(pkb, line.Split(' ')[0] + " " + line.Remove(0, line.Split('.')[0].Length + 2).Replace("}", "").Replace(" ", "").Replace(";", ""), final, currentPath + ".assignment.value");
 
                         for (int i = 0; i < line.Length - line.Replace("}", "").Length; i++)
                         {
@@ -88,6 +104,7 @@ namespace SPAFrontend
             }
 
             //Console.Write(code);
+            Console.WriteLine(pkb.ToString());
         }
 
         private static JObject CreateObjectForPath(string target, object newValue)
@@ -132,11 +149,15 @@ namespace SPAFrontend
             return obj;
         }
 
-        private static string ParseAssignment(string assignment, JObject jObj, string path)
+        private static string ParseAssignment(this IPKBStore pkb, string assignment, JObject jObj, string path)
         {
             assignment += ';';
             string parsedAssignment = "";
-            string left = assignment.Split(' ')[1].Split('=')[0];
+
+            string rownum = assignment.Split(' ')[0].Trim('.');
+            string variable = assignment.Split(' ')[1].Split('=')[0];
+            PKBParserServices.SetModify(pkb, new ExpressionModel(StatementType.ASSIGN, Int32.Parse(rownum)), new ExpressionModel(FactorType.VAR, variable, Int32.Parse(rownum)));
+
             string right = assignment.Split(' ')[1].Split('=')[1];
             bool readToOperation = false;
             string buffor = "";
@@ -168,7 +189,8 @@ namespace SPAFrontend
                             {
                                 var child1 = CreateObjectForPath(path + ".child1", buffor);
                                 jObj.Merge(child1);
-                            } else
+                            }
+                            else
                             {
                                 var child2 = CreateObjectForPath(path + ".child2", buffor);
                                 jObj.Merge(child2);
