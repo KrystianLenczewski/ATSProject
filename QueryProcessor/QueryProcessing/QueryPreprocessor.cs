@@ -49,14 +49,22 @@ namespace QueryProcessor.QueryProcessing
             if (suchThatIndex != -1)
             {
                 int endSuchThat = GetSuchThatEndIndex(splitedQuery);
-                for (int i = suchThatIndex + 1; i < endSuchThat; i += 2)
+
+                //Console.WriteLine(suchThatIndex.ToString());
+                //Console.WriteLine(endSuchThat.ToString());
+
+                // to jest OK
+                // 'i' wskazuje na pierwsza i kolejne czesci SUCH_THAT po AND lub spowoduje wyjscie z petli                
+                for (int i = suchThatIndex + 1; i < endSuchThat; i += 3)
                 {
                     RelationType relationType = _relTable.GetRelationType(splitedQuery[i]);
                     RelationNode relationNode = new RelationNode() { RelationType = relationType };
                     relationSectionNode.Childrens.Add(relationNode);
                     List<string> relationArguments = splitedQuery[i + 1].Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
                     AddArgumentsToRelationNode(relationNode, relationArguments);
+                    //Console.WriteLine("dodano node SUCH_THAT " + relationType);
                 }
+
                 return relationSectionNode;
             }
 
@@ -82,6 +90,7 @@ namespace QueryProcessor.QueryProcessing
 
             List<string> resultSymbols = splitedQuery[selectIndex + 1].Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
             SectionNode resultNode = new SectionNode { NodeType = NodeType.RESULT };
+
             foreach (var symbolName in resultSymbols)
             {
                 SynonimType synonimType = _symbolTable.GetSynonimType(symbolName);
@@ -99,19 +108,30 @@ namespace QueryProcessor.QueryProcessing
             int patternIndex = splitedQuery.IndexOf(QueryElement.Pattern.ToLower());
             int endWith = patternIndex == -1 ? splitedQuery.Count : patternIndex;
 
+            //Console.WriteLine(withIndex.ToString());
+            //Console.WriteLine(endWith.ToString());
+
+
             SectionNode withNode = new SectionNode { NodeType = NodeType.WITH };
             if (withIndex + 1 != endWith && withIndex != -1)
-            {
-                foreach (var withCondition in splitedQuery) // trzeba iterować po withCondition <- trzeba ją najpierw wyznaczyć
+            {                              
+                //dziala z dodawaniem AND, i przechodzi wskazujac na kolejne 'withCondition' (np. p.procName="abc") i wychodzi z petli po wszystkich elementach zlaczonych poprzez AND
+                for (int i = withIndex + 1; i < endWith; i += 2)
                 {
+                    string withCondition = splitedQuery[i];
                     AttributeNode attributeNode = GetAttributeNodeForWithCondition(withCondition);
                     withNode.Childrens.Add(attributeNode);
-
+                    
+                    //Console.WriteLine("dodano node WITH " + withCondition);
                 }
-                return withNode;
+
+                return withNode;                
+
             }
             else return null;
         }
+
+
 
         private AttributeNode GetAttributeNodeForWithCondition(string withCondition)
         {

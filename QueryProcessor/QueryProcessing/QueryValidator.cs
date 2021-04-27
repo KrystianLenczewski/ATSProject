@@ -85,14 +85,16 @@ namespace QueryProcessor.QueryProcessing
         //Select s1 such that Follows (s1,s2)
         private bool ValidateSuchThatSection(List<string> splitedQuery, int beginIndex, int endIndex)
         {
+
             List<string> validateErrors = new List<string>();
             try
-            {
+            {   
                 if (beginIndex + 1 != endIndex)
                 {
                     //Follows
                     //(s1,s2)
-                    for (int i = beginIndex + 1; i < endIndex; i += 2)
+                    
+                    for (int i = beginIndex + 1; i < endIndex; i += 3)
                     {
                         RelationType relationType = _relTable.GetRelationType(splitedQuery[i]);
                         List<string> relationArguments = splitedQuery[i + 1].Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
@@ -107,7 +109,22 @@ namespace QueryProcessor.QueryProcessing
 
                         if (!_relTable.ValidateRelation(relationType, relationArguments.Count, relationArgumentTypes.ToArray()))
                             validateErrors.Add($"Relacja: {splitedQuery[i]} jest niepoprawna.");
-                    }
+
+
+                        if (splitedQuery.Count > i + 2)
+                        {
+                            //Console.WriteLine("count: "+ splitedQuery.Count.ToString()+" i+2="+(i+2).ToString() +": "+ splitedQuery[i+2]);
+                            
+                            // walidacja "and"
+                            if(splitedQuery[i + 2] != "with" && splitedQuery[i + 2] != "pattern")
+                            {
+                                if (splitedQuery[i + 2].ToLower() != "and")
+                                    validateErrors.Add($"Oczekiwano AND po relacji w Such that zamiast: {splitedQuery[i + 2]}");
+                            }
+                        }
+                       
+
+                    }                   
                 }
                 else
                     validateErrors.Add("Po such that nie ma żadnych relacji.");
@@ -142,26 +159,41 @@ namespace QueryProcessor.QueryProcessing
             {
                 if (beginIndex + 1 != endIndex)
                 {
-                    string withCondition = splitedQuery[beginIndex + 1];
-                    string[] splittedWithCondition = withCondition.Split('=', StringSplitOptions.RemoveEmptyEntries);
-                    //v.varName=s.stmt#
-                    //v.varname
-                    //222
-                    if (splittedWithCondition.Length == 2)
+                    for (int i = beginIndex + 1; i < endIndex; i += 2)
                     {
-                        string leftSide = splittedWithCondition.ElementAtOrDefault(0);
-                        string rightSide = splittedWithCondition.ElementAtOrDefault(1);
-                        if (ValidateAttributePhrase(leftSide))
+                        string withCondition = splitedQuery[beginIndex + 1];
+                        string[] splittedWithCondition = withCondition.Split('=', StringSplitOptions.RemoveEmptyEntries);
+                        //v.varName=s.stmt#
+                        //v.varname
+                        //222
+                        if (splittedWithCondition.Length == 2)
                         {
-                            if (IsConst(rightSide) || ValidateAttributePhrase(rightSide))
+                            string leftSide = splittedWithCondition.ElementAtOrDefault(0);
+                            string rightSide = splittedWithCondition.ElementAtOrDefault(1);
+                            if (ValidateAttributePhrase(leftSide))
                             {
-                                if (!ValidateComparison(leftSide, rightSide))
-                                    validateErrors.Add("Błędne przyrównanie w klauzuli with.");
+                                if (IsConst(rightSide) || ValidateAttributePhrase(rightSide))
+                                {
+                                    if (!ValidateComparison(leftSide, rightSide))
+                                        validateErrors.Add("Błędne przyrównanie w klauzuli with.");
+                                }
+                            }
+                        }
+                        else
+                            validateErrors.Add("Atrybuty po klauzuli With są nieprawidłowe.");
+
+                        if (splitedQuery.Count > i + 1)
+                        {
+                            Console.WriteLine("count: "+ splitedQuery.Count.ToString()+" i+1="+(i+1).ToString() +": "+ splitedQuery[i+1]);
+
+                            // walidacja "and"
+                            if (splitedQuery[i + 1] != "pattern")
+                            {
+                                if (splitedQuery[i + 1].ToLower() != "and")
+                                    validateErrors.Add($"Oczekiwano AND po relacji w With zamiast: {splitedQuery[i + 1]}");
                             }
                         }
                     }
-                    else
-                        validateErrors.Add("Atrybuty po klauzuli With są nieprawidłowe.");
                 }
             }
             catch (ArgumentException e)
