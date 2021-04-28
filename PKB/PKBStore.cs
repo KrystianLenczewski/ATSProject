@@ -15,7 +15,12 @@ namespace PKB
             string x = "";
             foreach (var y in ModifiesList)
             {
-                x += $"{y.Key.Line} {y.Key.Name} {y.Key.Type} - {y.Value.Line} {y.Value.Name} {y.Value.Type}\n";
+                x += $"mod:\t{y.Key.Line} {y.Key.Name} {y.Key.Type} - {y.Value.Line} {y.Value.Name} {y.Value.Type}\n";
+            }
+
+            foreach (var y in ParentList)
+            {
+                x += $"parent:\t{y.Parent.Line} {y.Parent.Name} {y.Parent.Type} - {y.Child.Line} {y.Child.Name} {y.Child.Type} - {y.Index}\n";
             }
             return x;
         }

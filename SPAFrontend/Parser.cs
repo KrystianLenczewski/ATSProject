@@ -6,6 +6,7 @@ using Newtonsoft.Json.Linq;
 using System.IO;
 using System.Text;
 using Newtonsoft.Json;
+using SPAFrontend.mdoels;
 
 namespace SPAFrontend
 {
@@ -19,6 +20,7 @@ namespace SPAFrontend
             {
                 string currentPath = "";
                 string line = "";
+                List<DepthRownum> depthRownumPair = new List<DepthRownum>();
 
                 while ((line = reader.ReadLine()) != null)
                 {
@@ -32,30 +34,81 @@ namespace SPAFrontend
                     }
                     else if (line.Contains("while"))
                     {
-                        currentPath += ".while";
+                        string rownum = line.Split(' ')[0].Trim('.');
+
+                        string[] stmtTypePath = currentPath.Substring(0, currentPath.LastIndexOf('.')).Split('.');
+                        if (stmtTypePath[stmtTypePath.Length - 1].Contains("if") ||
+                            stmtTypePath[stmtTypePath.Length - 1].Contains("else"))
+                        {
+                            DepthRownum drp = depthRownumPair.Find(p => p.depth == currentPath.Split('.').Length);
+                            if (drp != null)
+                            {
+                                PKBParserServices.SetParent(pkb,
+                                    new ExpressionModel(SpecialType.STMTLST, drp.rownum),
+                                    new ExpressionModel(StatementType.WHILE, Int32.Parse(rownum)),
+                                    0);
+                            }
+                        }
+                        else if (stmtTypePath[stmtTypePath.Length - 1].Contains("while") &&
+                            Int32.TryParse(stmtTypePath[stmtTypePath.Length - 1].Split('-')[1], out int rn))
+                        {
+                            PKBParserServices.SetParent(pkb,
+                                new ExpressionModel(StatementType.WHILE, rn),
+                                new ExpressionModel(StatementType.WHILE, Int32.Parse(rownum)),
+                                0);
+                        }
+
+                        currentPath += $".while-{rownum}";
                         var obj = CreateObjectForPath(currentPath + ".param", (line.Split(' ')[2]));
                         final.Merge(obj);
-                        var obj2 = CreateObjectForPath(currentPath + ".rownum", (line.Split(' ')[0].Trim('.')));
+                        var obj2 = CreateObjectForPath(currentPath + ".rownum", (rownum));
                         final.Merge(obj2);
                         currentPath += ".stmtList";
                     }
                     else if (line.Contains("call"))
                     {
-                        currentPath += ".call";
+                        string rownum = line.Split(' ')[0].Trim('.');
+                        currentPath += $".call-{rownum}";
                         var obj = CreateObjectForPath(currentPath + ".param", (line.Split(' ')[1]));
                         final.Merge(obj);
-                        var obj2 = CreateObjectForPath(currentPath + ".rownum", (line.Split(' ')[0].Trim('.')));
+                        var obj2 = CreateObjectForPath(currentPath + ".rownum", (rownum));
                         final.Merge(obj2);
                         currentPath = currentPath.Remove(currentPath.LastIndexOf('.'));
                     }
                     else if (line.Contains("if"))
                     {
-                        currentPath += ".if";
+                        string rownum = line.Split(' ')[0].Trim('.');
+
+                        string[] stmtTypePath = currentPath.Substring(0, currentPath.LastIndexOf('.')).Split('.');
+                        if (stmtTypePath[stmtTypePath.Length - 1].Contains("if") ||
+                            stmtTypePath[stmtTypePath.Length - 1].Contains("else"))
+                        {
+                            DepthRownum drp = depthRownumPair.Find(p => p.depth == currentPath.Split('.').Length);
+                            if (drp != null)
+                            {
+                                PKBParserServices.SetParent(pkb,
+                                    new ExpressionModel(SpecialType.STMTLST, drp.rownum),
+                                    new ExpressionModel(StatementType.WHILE, Int32.Parse(rownum)),
+                                    0);
+                            }
+                        }
+                        else if (stmtTypePath[stmtTypePath.Length - 1].Contains("while") &&
+                            Int32.TryParse(stmtTypePath[stmtTypePath.Length - 1].Split('-')[1], out int rn))
+                        {
+                            PKBParserServices.SetParent(pkb,
+                                new ExpressionModel(StatementType.WHILE, rn),
+                                new ExpressionModel(StatementType.WHILE, Int32.Parse(rownum)),
+                                0);
+                        }
+
+                        currentPath += $".if-{rownum}";
                         var obj = CreateObjectForPath(currentPath + ".param", (line.Split(' ')[2]));
                         final.Merge(obj);
-                        var obj2 = CreateObjectForPath(currentPath + ".rownum", (line.Split(' ')[0].Trim('.')));
+                        var obj2 = CreateObjectForPath(currentPath + ".rownum", (rownum));
                         final.Merge(obj2);
                         currentPath += ".stmtList";
+
+                        depthRownumPair.Add(new DepthRownum(currentPath.Split('.').Length, Int32.Parse(rownum)));
                     }
                     else if (line.Contains("else"))
                     {
@@ -63,38 +116,111 @@ namespace SPAFrontend
                     }
                     else if (line.Contains(";") && !line.Contains("}"))
                     {
-                        Console.WriteLine("curr1\t" + currentPath);
-                        var rownum = CreateObjectForPath(currentPath + ".assignment.rownum", (line.Split(' ')[0].Trim('.')));
+                        string rownumNumber = line.Split(' ')[0].Trim('.');
+                        var rownum = CreateObjectForPath(currentPath + $".assignment-{rownumNumber}.rownum", (rownumNumber));
                         final.Merge(rownum);
-                        var variable = CreateObjectForPath(currentPath + ".assignment.variable", (line.Split(' ')[1].Split('=')[0].Trim()));
+                        var variable = CreateObjectForPath(currentPath + $".assignment-{rownumNumber}.variable", (line.Split(' ')[1].Split('=')[0].Trim()));
                         final.Merge(variable);
 
                         string[] stmtTypePath = currentPath.Substring(0, currentPath.LastIndexOf('.')).Split('.');
-                        var rownumForSetModifies = final.SelectToken(currentPath.Substring(0, currentPath.LastIndexOf('.')) + ".rownum");
-                        if (stmtTypePath[stmtTypePath.Length - 1].Trim().Contains("while") && rownumForSetModifies != null && Int32.TryParse(rownumForSetModifies.ToString(), out int rn))
+                        var rownumForPKB = final.SelectToken(currentPath.Substring(0, currentPath.LastIndexOf('.')) + ".rownum");
+                        if (stmtTypePath[stmtTypePath.Length - 1].Trim().Contains("while") &&
+                            rownumForPKB != null &&
+                            Int32.TryParse(rownumForPKB.ToString(), out int rnFPKB) &&
+                            Int32.TryParse(rownumNumber.ToString(), out int rn))
                         {
-                            PKBParserServices.SetModify(pkb, new ExpressionModel(StatementType.WHILE, rn), new ExpressionModel(FactorType.VAR, line.Split(' ')[1].Split('=')[0].Trim(), Int32.Parse(line.Split(' ')[0].Trim('.'))));
+                            PKBParserServices.SetModify(pkb,
+                                new ExpressionModel(StatementType.WHILE, rnFPKB),
+                                new ExpressionModel(FactorType.VAR, line.Split(' ')[1].Split('=')[0].Trim(), rn));
+
+                            PKBParserServices.SetParent(pkb,
+                                new ExpressionModel(StatementType.WHILE, rnFPKB),
+                                new ExpressionModel(StatementType.ASSIGN, rn),
+                                0);
+                        }
+                        else if (stmtTypePath[stmtTypePath.Length - 1].Trim().Contains("if") &&
+                            rownumForPKB != null &&
+                            Int32.TryParse(rownumForPKB.ToString(), out int rnFPKB2) &&
+                            Int32.TryParse(rownumNumber.ToString(), out int rn2))
+                        {
+                            PKBParserServices.SetParent(pkb,
+                                new ExpressionModel(SpecialType.STMTLST, rnFPKB2),
+                                new ExpressionModel(StatementType.ASSIGN, rn2),
+                                0);
+                        }
+                        else if (stmtTypePath[stmtTypePath.Length - 1].Trim().Contains("else") &&
+                            stmtTypePath[stmtTypePath.Length - 2].Trim().Contains("stmtList") &&
+                            Int32.TryParse(rownumNumber.ToString(), out int rn3))
+                        {
+                            DepthRownum drp = depthRownumPair.Find(p => p.depth == currentPath.Split('.').Length);
+                            if (drp != null)
+                            {
+                                PKBParserServices.SetParent(pkb,
+                                    new ExpressionModel(SpecialType.STMTLST, drp.rownum),
+                                    new ExpressionModel(StatementType.ASSIGN, rn3),
+                                    0);
+                            }
                         }
 
-                        ParseAssignment(pkb, line.Split(' ')[0] + " " + line.Remove(0, line.Split('.')[0].Length + 2).Replace(";", "").Replace(" ", ""), final, currentPath + ".assignment.value");
+                        ParseAssignment(pkb,
+                            line.Split(' ')[0] + " " + line.Remove(0, line.Split('.')[0].Length + 2).Replace(";", "").Replace(" ", ""),
+                            final,
+                            currentPath + $".assignment-{rownumNumber}.value");
                     }
                     else
                     {
-                        var rownum = CreateObjectForPath(currentPath + ".assignment.rownum", (line.Split(' ')[0].Trim('.')));
+                        string rownumNumber = line.Split(' ')[0].Trim('.');
+                        var rownum = CreateObjectForPath(currentPath + $".assignment-{rownumNumber}.rownum", (rownumNumber));
                         final.Merge(rownum);
-                        var variable = CreateObjectForPath(currentPath + ".assignment.variable", (line.Split(' ')[1].Split('=')[0].Trim()));
+                        var variable = CreateObjectForPath(currentPath + $".assignment-{rownumNumber}.variable", (line.Split(' ')[1].Split('=')[0].Trim()));
                         final.Merge(variable);
 
                         string[] stmtTypePath = currentPath.Substring(0, currentPath.LastIndexOf('.')).Split('.');
-                        var rownumForSetModifies = final.SelectToken(currentPath.Substring(0, currentPath.LastIndexOf('.')) + ".rownum");
-                        if (stmtTypePath[stmtTypePath.Length - 1].Trim().Contains("while") && rownumForSetModifies != null && Int32.TryParse(rownumForSetModifies.ToString(), out int rn))
+                        var rownumForPKB = final.SelectToken(currentPath.Substring(0, currentPath.LastIndexOf('.')) + ".rownum");
+                        if (stmtTypePath[stmtTypePath.Length - 1].Trim().Contains("while") &&
+                            rownumForPKB != null &&
+                            Int32.TryParse(rownumForPKB.ToString(), out int rnFPKB) &&
+                            Int32.TryParse(rownumNumber.ToString(), out int rn))
                         {
-                            PKBParserServices.SetModify(pkb, new ExpressionModel(StatementType.WHILE, rn), new ExpressionModel(FactorType.VAR, line.Split(' ')[1].Split('=')[0].Trim(), Int32.Parse(line.Split(' ')[0].Trim('.'))));
+                            PKBParserServices.SetModify(pkb,
+                                new ExpressionModel(StatementType.WHILE, rnFPKB),
+                                new ExpressionModel(FactorType.VAR, line.Split(' ')[1].Split('=')[0].Trim(), rn));
+
+                            PKBParserServices.SetParent(pkb,
+                                new ExpressionModel(StatementType.WHILE, rnFPKB),
+                                new ExpressionModel(StatementType.ASSIGN, rn),
+                                0);
                         }
-                        ParseAssignment(pkb, line.Split(' ')[0] + " " + line.Remove(0, line.Split('.')[0].Length + 2).Replace("}", "").Replace(" ", "").Replace(";", ""), final, currentPath + ".assignment.value");
+                        else if (stmtTypePath[stmtTypePath.Length - 1].Trim().Contains("if") &&
+                           rownumForPKB != null &&
+                           Int32.TryParse(rownumForPKB.ToString(), out int rnFPKB2) &&
+                            Int32.TryParse(rownumNumber.ToString(), out int rn2))
+                        {
+                            PKBParserServices.SetParent(pkb,
+                                new ExpressionModel(SpecialType.STMTLST, rnFPKB2),
+                                new ExpressionModel(StatementType.ASSIGN, rn2),
+                                0);
+                        }
+                        else if (stmtTypePath[stmtTypePath.Length - 1].Trim().Contains("else") &&
+                            stmtTypePath[stmtTypePath.Length - 2].Trim().Contains("stmtList"))
+                        {
+                            DepthRownum drp = depthRownumPair.Find(p => p.depth == currentPath.Split('.').Length);
+                            if (drp != null &&
+                            Int32.TryParse(rownumNumber, out int rn3))
+                            {
+                                PKBParserServices.SetParent(pkb,
+                                    new ExpressionModel(SpecialType.STMTLST, drp.rownum),
+                                    new ExpressionModel(StatementType.ASSIGN, rn3),
+                                    0);
+                            }
+                        }
+
+                        ParseAssignment(pkb, line.Split(' ')[0] + " " + line.Remove(0, line.Split('.')[0].Length + 2).Replace("}", "").Replace(" ", "").Replace(";", ""), final, currentPath + $".assignment-{rownumNumber}.value");
 
                         for (int i = 0; i < line.Length - line.Replace("}", "").Length; i++)
                         {
+                            if (stmtTypePath[stmtTypePath.Length - 1].Trim().Contains("else"))
+                                depthRownumPair.RemoveAll(p => p.depth == currentPath.Split('.').Length);
                             currentPath = currentPath.Remove(currentPath.LastIndexOf('.'));
                             currentPath = currentPath.Remove(currentPath.LastIndexOf('.'));
                         }
@@ -102,7 +228,7 @@ namespace SPAFrontend
                 }
                 Console.WriteLine(final);
             }
-
+            PKBParserServices.RebuildParentListIndexes(pkb);
             //Console.Write(code);
             Console.WriteLine(pkb.ToString());
         }
