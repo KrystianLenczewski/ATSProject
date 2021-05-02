@@ -7,6 +7,8 @@ using System.IO;
 using System.Text;
 using Newtonsoft.Json;
 using SPAFrontend.mdoels;
+using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace SPAFrontend
 {
@@ -35,6 +37,10 @@ namespace SPAFrontend
                     else if (line.Contains("while"))
                     {
                         string rownum = line.Split(' ')[0].Trim('.');
+
+                        PKBParserServices.SetUses(pkb,
+                            new ExpressionModel(StatementType.WHILE, Int32.Parse(rownum)),
+                            new ExpressionModel(FactorType.VAR, line.Split(' ')[2], Int32.Parse(rownum)));
 
                         string[] stmtTypePath = currentPath.Substring(0, currentPath.LastIndexOf('.')).Split('.');
                         if (stmtTypePath[stmtTypePath.Length - 1].Contains("if") ||
@@ -100,6 +106,10 @@ namespace SPAFrontend
                                 new ExpressionModel(StatementType.WHILE, Int32.Parse(rownum)),
                                 0);
                         }
+
+                        PKBParserServices.SetUses(pkb,
+                            new ExpressionModel(StatementType.IF, Int32.Parse(rownum)),
+                            new ExpressionModel(FactorType.VAR, line.Split(' ')[2], Int32.Parse(rownum)));
 
                         currentPath += $".if-{rownum}";
                         var obj = CreateObjectForPath(currentPath + ".param", (line.Split(' ')[2]));
@@ -229,7 +239,35 @@ namespace SPAFrontend
                 Console.WriteLine(final);
             }
             PKBParserServices.RebuildParentListIndexes(pkb);
-            //Console.Write(code);
+
+            var tmpUsesList = pkb.UsesList.GetRange(0, pkb.UsesList.Count);
+            foreach (var item in tmpUsesList)
+            {
+                ExpressionModel tmpModel;
+                if (item.Value.Name.Equals(string.Empty))
+                {
+                    tmpModel = new ExpressionModel((StatementType)item.Value.Type, item.Value.Line);
+                }
+                else
+                {
+                    tmpModel = new ExpressionModel((FactorType)item.Value.Type, item.Value.Name, item.Value.Line);
+                }
+
+                var parentsList = FindAllParentsRecursively(pkb, item.Key).ToList();
+                foreach (var parent in parentsList)
+                {
+                    pkb.SetUses(new ExpressionModel((StatementType)parent.Type, parent.Line), tmpModel);
+                }
+            }
+            tmpUsesList = pkb.UsesList.GetRange(0, pkb.UsesList.Count);
+            foreach (var item in tmpUsesList)
+            {
+                if (item.Key.Type.Equals(ExpressionType.STMTLST))
+                {
+                    pkb.UsesList.Remove(item);
+                }
+            }
+
             Console.WriteLine(pkb.ToString());
         }
 
@@ -288,6 +326,16 @@ namespace SPAFrontend
             bool readToOperation = false;
             string buffor = "";
             char operation = '\0';
+
+            foreach(char x in right)
+            {
+                if (char.IsLetter(x))
+                {
+                    PKBParserServices.SetUses(pkb, 
+                        new ExpressionModel(StatementType.ASSIGN, Int32.Parse(rownum)), 
+                        new ExpressionModel(FactorType.VAR, x.ToString(), Int32.Parse(rownum)));
+                }
+            }
 
             for (int i = 0; i < right.Length; i++)
             {
@@ -358,6 +406,22 @@ namespace SPAFrontend
             }
 
             return parsedAssignment;
+        }
+
+        private static HashSet<ExpressionModel> FindAllParentsRecursively(this IPKBStore pkb, ExpressionModel child)
+        {
+            HashSet<ExpressionModel> res = new HashSet<ExpressionModel>();
+            
+            foreach(var item in pkb.ParentList)
+            {
+                if (item.Child.Equals(child))
+                {
+                    res.Add(item.Parent);
+                    res.UnionWith(FindAllParentsRecursively(pkb, item.Parent));
+                }
+            }
+
+            return res;
         }
     }
 }

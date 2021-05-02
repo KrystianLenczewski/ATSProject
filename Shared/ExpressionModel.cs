@@ -8,7 +8,8 @@
         STMTLST,
         PROCEDURE,
         VAR,
-        CONST
+        CONST,
+        IF
     }
 
     public enum OperationsType
@@ -26,6 +27,7 @@
     {
         ASSIGN = ExpressionType.ASSIGN,
         WHILE = ExpressionType.WHILE,
+        IF = ExpressionType.IF
     }
 
     public enum FactorType
@@ -63,6 +65,19 @@
         {
             Type = (ExpressionType)type;
             Line = line;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if ((obj == null) || !this.GetType().Equals(obj.GetType()))
+            {
+                return false;
+            }
+            else
+            {
+                ExpressionModel p = (ExpressionModel)obj;
+                return (Type == p.Type) && (Line == p.Line);
+            }
         }
     }
 }
