@@ -27,6 +27,12 @@ namespace PKB
             {
                 x += $"uses:\t{y.Key.Line} {y.Key.Name} {y.Key.Type} - {y.Value.Line} {y.Value.Name} {y.Value.Type}\n";
             }
+
+            foreach (var y in FollowsList)
+            {
+                x += $"follows:\t{y.Key.Line} {y.Key.Name} {y.Key.Type} - {y.Value.Line} {y.Value.Name} {y.Value.Type}\n";
+            }
+
             return x;
         }
 

@@ -9,7 +9,8 @@
         PROCEDURE,
         VAR,
         CONST,
-        IF
+        IF,
+        CALL
     }
 
     public enum OperationsType
@@ -27,7 +28,8 @@
     {
         ASSIGN = ExpressionType.ASSIGN,
         WHILE = ExpressionType.WHILE,
-        IF = ExpressionType.IF
+        IF = ExpressionType.IF,
+        CALL = ExpressionType.CALL
     }
 
     public enum FactorType

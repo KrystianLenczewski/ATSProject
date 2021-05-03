@@ -17,6 +17,7 @@ namespace SPAFrontend
         public static void ParseCode(this IPKBStore pkb, string code)
         {
             JObject final = new JObject();
+            List<ExpressionModel> ungroupedChildren = new List<ExpressionModel>();
 
             using (StringReader reader = new StringReader(code))
             {
@@ -41,6 +42,11 @@ namespace SPAFrontend
                         PKBParserServices.SetUses(pkb,
                             new ExpressionModel(StatementType.WHILE, Int32.Parse(rownum)),
                             new ExpressionModel(FactorType.VAR, line.Split(' ')[2], Int32.Parse(rownum)));
+
+                        if (currentPath.Equals("$.procedure.stmtList"))
+                        {
+                            ungroupedChildren.Add(new ExpressionModel(StatementType.WHILE, Int32.Parse(rownum)));
+                        }
 
                         string[] stmtTypePath = currentPath.Substring(0, currentPath.LastIndexOf('.')).Split('.');
                         if (stmtTypePath[stmtTypePath.Length - 1].Contains("if") ||
@@ -74,6 +80,12 @@ namespace SPAFrontend
                     else if (line.Contains("call"))
                     {
                         string rownum = line.Split(' ')[0].Trim('.');
+
+                        if (currentPath.Equals("$.procedure.stmtList"))
+                        {
+                            ungroupedChildren.Add(new ExpressionModel(StatementType.CALL, Int32.Parse(rownum)));
+                        }
+
                         currentPath += $".call-{rownum}";
                         var obj = CreateObjectForPath(currentPath + ".param", (line.Split(' ')[1]));
                         final.Merge(obj);
@@ -84,6 +96,11 @@ namespace SPAFrontend
                     else if (line.Contains("if"))
                     {
                         string rownum = line.Split(' ')[0].Trim('.');
+
+                        if (currentPath.Equals("$.procedure.stmtList"))
+                        {
+                            ungroupedChildren.Add(new ExpressionModel(StatementType.IF, Int32.Parse(rownum)));
+                        }
 
                         string[] stmtTypePath = currentPath.Substring(0, currentPath.LastIndexOf('.')).Split('.');
                         if (stmtTypePath[stmtTypePath.Length - 1].Contains("if") ||
@@ -127,6 +144,12 @@ namespace SPAFrontend
                     else if (line.Contains(";") && !line.Contains("}"))
                     {
                         string rownumNumber = line.Split(' ')[0].Trim('.');
+
+                        if (currentPath.Equals("$.procedure.stmtList"))
+                        {
+                            ungroupedChildren.Add(new ExpressionModel(StatementType.ASSIGN, Int32.Parse(rownumNumber)));
+                        }
+
                         var rownum = CreateObjectForPath(currentPath + $".assignment-{rownumNumber}.rownum", (rownumNumber));
                         final.Merge(rownum);
                         var variable = CreateObjectForPath(currentPath + $".assignment-{rownumNumber}.variable", (line.Split(' ')[1].Split('=')[0].Trim()));
@@ -180,6 +203,12 @@ namespace SPAFrontend
                     else
                     {
                         string rownumNumber = line.Split(' ')[0].Trim('.');
+
+                        if (currentPath.Equals("$.procedure.stmtList"))
+                        {
+                            ungroupedChildren.Add(new ExpressionModel(StatementType.ASSIGN, Int32.Parse(rownumNumber)));
+                        }
+
                         var rownum = CreateObjectForPath(currentPath + $".assignment-{rownumNumber}.rownum", (rownumNumber));
                         final.Merge(rownum);
                         var variable = CreateObjectForPath(currentPath + $".assignment-{rownumNumber}.variable", (line.Split(' ')[1].Split('=')[0].Trim()));
@@ -240,6 +269,7 @@ namespace SPAFrontend
             }
             PKBParserServices.RebuildParentListIndexes(pkb);
 
+            //setUses (get upper parents of processed child)
             var tmpUsesList = pkb.UsesList.GetRange(0, pkb.UsesList.Count);
             foreach (var item in tmpUsesList)
             {
@@ -267,6 +297,47 @@ namespace SPAFrontend
                     pkb.UsesList.Remove(item);
                 }
             }
+
+            //setFollows (group by parent, then get all previous children of each child)
+            var tmpParents = pkb.ParentList.GetRange(0, pkb.ParentList.Count);
+            var tmpChildren = tmpParents.Select(x => x.Child);
+            var groupedParents = tmpParents.GroupBy(x => x.Parent.Line).Select(g => g.FirstOrDefault().Parent).ToList();
+            List<ExpressionModel> children = new List<ExpressionModel>();
+
+            foreach (var x in groupedParents)
+            {
+                children = new List<ExpressionModel>();
+                foreach (var y in tmpParents)
+                {
+                    if(y.Parent.Line == x.Line)
+                    {
+                        children.Add(y.Child);
+                    }
+                }
+
+                if (children.Count > 1)
+                    for (int i = 0; i < children.Count; i++)
+                    {
+                        for (int j = i + 1; j < children.Count; j++)
+                        {
+                            PKBParserServices.SetFollows(pkb,
+                                    children[i],
+                                    children[j]);
+                        }
+                    }
+            }
+
+            //need to remember to handle ungrouped childen (their parent is default scope)
+            if (ungroupedChildren.Count > 1)
+                for (int i = 0; i < ungroupedChildren.Count; i++)
+                {
+                    for (int j = i + 1; j < ungroupedChildren.Count; j++)
+                    {
+                        PKBParserServices.SetFollows(pkb,
+                                ungroupedChildren[i],
+                                ungroupedChildren[j]);
+                    }
+                }
 
             Console.WriteLine(pkb.ToString());
         }
@@ -327,12 +398,12 @@ namespace SPAFrontend
             string buffor = "";
             char operation = '\0';
 
-            foreach(char x in right)
+            foreach (char x in right)
             {
                 if (char.IsLetter(x))
                 {
-                    PKBParserServices.SetUses(pkb, 
-                        new ExpressionModel(StatementType.ASSIGN, Int32.Parse(rownum)), 
+                    PKBParserServices.SetUses(pkb,
+                        new ExpressionModel(StatementType.ASSIGN, Int32.Parse(rownum)),
                         new ExpressionModel(FactorType.VAR, x.ToString(), Int32.Parse(rownum)));
                 }
             }
@@ -411,8 +482,8 @@ namespace SPAFrontend
         private static HashSet<ExpressionModel> FindAllParentsRecursively(this IPKBStore pkb, ExpressionModel child)
         {
             HashSet<ExpressionModel> res = new HashSet<ExpressionModel>();
-            
-            foreach(var item in pkb.ParentList)
+
+            foreach (var item in pkb.ParentList)
             {
                 if (item.Child.Equals(child))
                 {
