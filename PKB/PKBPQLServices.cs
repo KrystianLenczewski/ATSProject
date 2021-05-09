@@ -6,17 +6,22 @@ namespace PKB
 {
     public static class PKBPQLServices
     {
-        public static List<Variable> GetAllVariables()
+        public static List<Variable> GetAllVariables(this IPKBStore pkb)
         {
             throw new NotImplementedException();
         }
 
-        public static List<Statement> GetAllStatements()
+        public static List<Statement> GetAllStatements(this IPKBStore pkb)
         {
             throw new NotImplementedException();
         }
 
-        public static List<Procedure> GetAllProcedures()
+        public static List<Procedure> GetAllProcedures(this IPKBStore pkb)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static List<int> GetAllConstants(this IPKBStore pkb)
         {
             throw new NotImplementedException();
         }
