@@ -111,19 +111,32 @@ namespace QueryProcessor.QueryProcessing
                             validateErrors.Add($"Relacja: {splitedQuery[i]} jest niepoprawna.");
 
 
+                        // walidacja, czy po relacji i jej argumentach, jesli nie ma "with" lub "pattern", to znajduje sie "and"
                         if (splitedQuery.Count > i + 2)
-                        {
-                            //Console.WriteLine("count: "+ splitedQuery.Count.ToString()+" i+2="+(i+2).ToString() +": "+ splitedQuery[i+2]);
-                            
-                            // walidacja "and"
-                            if(splitedQuery[i + 2] != "with" && splitedQuery[i + 2] != "pattern")
+                        {                            
+                            if (splitedQuery[i + 2] != QueryElement.With && splitedQuery[i + 2] != QueryElement.Pattern)
                             {
-                                if (splitedQuery[i + 2].ToLower() != "and")
+                                if (splitedQuery[i + 2].ToLower() != QueryElement.And)
                                     validateErrors.Add($"Oczekiwano AND po relacji w Such that zamiast: {splitedQuery[i + 2]}");
                             }
                         }
-                       
 
+                        // walidacja czy po "and" znajduje sie relacja
+                        if (splitedQuery.Count > i + 2)
+                        {
+                            if (splitedQuery[i + 2].ToLower() == QueryElement.And)
+                            {
+                                try 
+                                {
+                                    _relTable.GetRelationType(splitedQuery[i + 3]);
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    validateErrors.Add($"Po AND oczekiwano relacji zamiast: {splitedQuery[i + 3]}, {ex}");
+                                }                                
+                            }
+                        }
                     }                   
                 }
                 else
@@ -181,16 +194,50 @@ namespace QueryProcessor.QueryProcessing
                         }
                         else
                             validateErrors.Add("Atrybuty po klauzuli With są nieprawidłowe.");
-
+                                                
                         if (splitedQuery.Count > i + 1)
-                        {
-                            Console.WriteLine("count: "+ splitedQuery.Count.ToString()+" i+1="+(i+1).ToString() +": "+ splitedQuery[i+1]);
-
-                            // walidacja "and"
-                            if (splitedQuery[i + 1] != "pattern")
+                        {                           
+                            if (splitedQuery[i + 1] != QueryElement.Pattern)
                             {
-                                if (splitedQuery[i + 1].ToLower() != "and")
+                                // walidacja, czy jesli nie ma "pattern" to znajduje sie "and"
+                                if (splitedQuery[i + 1].ToLower() != QueryElement.And)
                                     validateErrors.Add($"Oczekiwano AND po relacji w With zamiast: {splitedQuery[i + 1]}");
+
+                                // walidacja, czy "and" nie jest ostatnim miejscu zapytania
+                                if (splitedQuery[i + 1].ToLower() == QueryElement.And)
+                                {
+                                    if(splitedQuery.Count == i + 2)
+                                    {
+                                        validateErrors.Add("AND nie może być na koncu zapytania.");
+                                    }
+
+                                    // walidacja czy po "and" znajduje sie odpowiednio zadany warunek
+                                    if (splitedQuery.Count > i + 2)
+                                    {
+                                        string nextWithCondition = splitedQuery[i + 2];
+                                        string[] splittedNextWithCondition = nextWithCondition.Split('=', StringSplitOptions.RemoveEmptyEntries);
+
+                                        if (splitedQuery[i + 1] == QueryElement.And)
+                                        {
+                                            if (splittedNextWithCondition.Length == 2)
+                                            {
+                                                string nextLeftSide = splittedNextWithCondition.ElementAtOrDefault(0);
+                                                string nextRightSide = splittedNextWithCondition.ElementAtOrDefault(1);
+                                                if (ValidateAttributePhrase(nextLeftSide))
+                                                {
+                                                    if (IsConst(nextRightSide) || ValidateAttributePhrase(nextRightSide))
+                                                    {
+                                                        if (!ValidateComparison(nextLeftSide, nextRightSide))
+                                                            validateErrors.Add("Błędne przyrównanie w klauzuli with po AND.");
+                                                    }
+                                                }
+                                            }
+                                            else
+                                                validateErrors.Add("Atrybuty po AND w klauzuli With są nieprawidłowe.");
+                                        }
+                                    }
+
+                                }                                                                     
                             }
                         }
                     }

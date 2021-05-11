@@ -117,18 +117,5 @@ namespace QueryProcessor.RelTable
             else throw new ArgumentException("Nie rozpoznano relacji.");
         }
 
-
-        public bool ValidateRelationName(string relationName)
-        {
-            //return true if relationName is correct
-            //return false if relationName is not correct
-            if (relationName.Equals("Modifies", StringComparison.OrdinalIgnoreCase)) return true;
-            else if (relationName.Equals("Follows", StringComparison.OrdinalIgnoreCase)) return true;
-            else if (relationName.Equals("Follows*", StringComparison.OrdinalIgnoreCase)) return true;
-            else if (relationName.Equals("Parent", StringComparison.OrdinalIgnoreCase)) return true;
-            else if (relationName.Equals("Parent*", StringComparison.OrdinalIgnoreCase)) return true;
-            else return false;
-
-        }
     }
 }
