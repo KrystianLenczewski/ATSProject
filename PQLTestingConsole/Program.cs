@@ -12,7 +12,7 @@ namespace PQLTestingConsole
             string query = "assign a,a1; stmt s,s1; variable v; procedure p; constant c; select p with v.varName=p.procName";
             QueryTree queryTree = queryPreprocessor.ParseQuery(query);
             QueryEvaluator queryEvaluator = new QueryEvaluator();
-            List<object> queryResultsRaw = queryEvaluator.GetQueryResultsRaw(queryTree);
+            string queryResultsRaw = queryEvaluator.GetQueryResultsRaw(queryTree);
         }
     }
 }
