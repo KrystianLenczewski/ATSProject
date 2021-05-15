@@ -63,6 +63,12 @@ namespace QueryProcessor.RelTable
             //FOLLOWS_STAR
             _relTableItems.Add(new RelTableItem(RelationType.FOLLOWS_STAR, 2, followsArg1Types, followsArg2Types));
 
+            List<RelationArgumentType> nextArg1Types = new List<RelationArgumentType> {  RelationArgumentType.Prog_line, RelationArgumentType.Integer };
+            List<RelationArgumentType> nextyArg2Types = new List<RelationArgumentType> {  RelationArgumentType.Prog_line, RelationArgumentType.Integer };
+            //NEXT
+            _relTableItems.Add(new RelTableItem(RelationType.NEXT, 2, nextArg1Types, nextyArg2Types));
+            //NEXT_STAR
+            _relTableItems.Add(new RelTableItem(RelationType.NEXT_STAR, 2, nextArg1Types, nextyArg2Types));
             /*
             
             Program design entity relationships:
@@ -114,6 +120,11 @@ namespace QueryProcessor.RelTable
             else if (relationName.Equals("Follows*", StringComparison.OrdinalIgnoreCase)) return RelationType.FOLLOWS_STAR;
             else if (relationName.Equals("Parent", StringComparison.OrdinalIgnoreCase)) return RelationType.PARENT;
             else if (relationName.Equals("Parent*", StringComparison.OrdinalIgnoreCase)) return RelationType.PARENT_STAR;
+            else if (relationName.Equals("Calls", StringComparison.OrdinalIgnoreCase)) return RelationType.CALLS;
+            else if (relationName.Equals("Calls*", StringComparison.OrdinalIgnoreCase)) return RelationType.CALLS_STAR;
+            else if (relationName.Equals("Uses", StringComparison.OrdinalIgnoreCase)) return RelationType.USES;
+            else if (relationName.Equals("Next", StringComparison.OrdinalIgnoreCase)) return RelationType.NEXT;
+            else if (relationName.Equals("Next*", StringComparison.OrdinalIgnoreCase)) return RelationType.NEXT_STAR;
             else throw new ArgumentException("Nie rozpoznano relacji.");
         }
     }
