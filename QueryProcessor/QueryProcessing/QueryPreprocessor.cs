@@ -107,7 +107,7 @@ namespace QueryProcessor.QueryProcessing
             {
                 SectionNode withNode = new SectionNode { NodeType = NodeType.WITH };
 
-                //dziala z dodawaniem AND, i przechodzi wskazujac na kolejne 'withCondition' (np. p.procName="abc") i wychodzi z petli po wszystkich elementach zlaczonych poprzez AND
+                //dziala z dodawaniem AND, index przechodzi wskazujac na kolejne 'withCondition' (np. p.procName="abc") i wychodzi z petli po wszystkich elementach zlaczonych poprzez AND
                 for (int i = withIndex + 1; i < endWith; i += 2)
                 {
                     string withCondition = splitedQuery[i];

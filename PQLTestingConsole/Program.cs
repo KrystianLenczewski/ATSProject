@@ -27,7 +27,7 @@ namespace PQLTestingConsole
 
             QueryTree queryTree = queryPreprocessor.ParseQuery(query);
             QueryEvaluator queryEvaluator = new QueryEvaluator();
-            List<object> queryResultsRaw = queryEvaluator.GetQueryResultsRaw(queryTree);
+
         }
     }
 }
