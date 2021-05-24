@@ -25,7 +25,7 @@ namespace PKB
         {
             throw new NotImplementedException();
         }
-
+        //modifies
         public static List<Variable> GetModified(this IPKBStore pkb, Statement statement)
         {
             throw new NotImplementedException();
@@ -130,5 +130,38 @@ namespace PKB
         {
             throw new NotImplementedException();
         }
+
+        //Calls
+        //which procedures calls procedure p?
+        public static List<Procedure> GetCalls(this IPKBStore pkb, Procedure p)
+        {
+            throw new NotImplementedException();
+        }
+        //Which procedures are called from procedure p?
+        public static List<Procedure> GetCalledFrom(this IPKBStore pkb, Procedure p)
+        {
+            throw new NotImplementedException();
+        }
+        //Does procedure p call q?
+        public static bool IsCalls(this IPKBStore pkb, Procedure p, Procedure q)
+        {
+            throw new NotImplementedException();
+        }
+        //which procedures call procedure p?
+        public static List<Procedure> GetCallsStar(this IPKBStore pkb, Procedure p)
+        {
+            throw new NotImplementedException();
+        }
+        //Which procedures are called from p?
+        public static List<Procedure> GetCalledStarFrom(this IPKBStore pkb, Procedure p)
+        {
+            throw new NotImplementedException();
+        }
+        //Does procedure p call q?
+        public static bool IsCallsStar(this IPKBStore pkb, Procedure p, Procedure q)
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }
