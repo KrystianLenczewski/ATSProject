@@ -49,6 +49,12 @@ namespace QueryProcessor.QueryProcessing
                     case RelationType.FOLLOWS_STAR:
                         HandleFollowStar(item, isResultBoolean, resultSynonim);
                         break;
+                    case RelationType.CALLS:
+                        HandleCalls(item, isResultBoolean, resultSynonim);
+                        break;
+                    case RelationType.CALLS_STAR:
+                        HandleCallsStar(item, isResultBoolean, resultSynonim);
+                        break;
                     default:
                         break;
                 }
@@ -139,6 +145,53 @@ namespace QueryProcessor.QueryProcessing
                 _resultProcessor.AddRelationResult(SynonimType.Statement, statements);
             }
         }
+
+        private void HandleCalls(RelationNode relationNode, bool isResultBoolean, SynonimNode resultChildren)
+        {
+            if (isResultBoolean)
+            {
+                Procedure proc1 = IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[0]);
+                Procedure proc2 = IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[1]);
+                _resultProcessor.AddRelationResult(_pkbStore.IsCalls(proc1, proc2));
+            }
+            else
+            {
+                if (relationNode.Arguments[1].RelationArgumentType == RelationArgumentType.Procedure)
+                {
+                    List<Procedure> procedures = _pkbStore.GetCalls(IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[1]));
+                    _resultProcessor.AddRelationResult(SynonimType.Procedure, procedures);
+                }
+                else if (relationNode.Arguments[0].RelationArgumentType == RelationArgumentType.Procedure)
+                {
+                    List<Procedure> procedures = _pkbStore.GetCalledFrom(IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[0]));
+                    _resultProcessor.AddRelationResult(SynonimType.Procedure, procedures);
+                }
+            }
+        }
+
+        private void HandleCallsStar(RelationNode relationNode, bool isResultBoolean, SynonimNode resultChildren)
+        {
+            if (isResultBoolean)
+            {
+                Procedure proc1 = IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[0]);
+                Procedure proc2 = IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[1]);
+                _resultProcessor.AddRelationResult(_pkbStore.IsCallsStar(proc1, proc2));
+            }
+            else
+            {
+                if (relationNode.Arguments[1].RelationArgumentType == RelationArgumentType.Procedure)
+                {
+                    List<Procedure> procedures = _pkbStore.GetCallsStar(IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[1]));
+                    _resultProcessor.AddRelationResult(SynonimType.Procedure, procedures);
+                }
+                else if (relationNode.Arguments[0].RelationArgumentType == RelationArgumentType.Procedure)
+                {
+                    List<Procedure> procedures = _pkbStore.GetCalledStarFrom(IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[0]));
+                    _resultProcessor.AddRelationResult(SynonimType.Procedure, procedures);
+                }
+            }         
+        }
+
     }
 
     //zwracala varset, stmtset,
