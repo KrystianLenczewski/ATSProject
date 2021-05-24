@@ -127,5 +127,6 @@ namespace QueryProcessor.RelTable
             else if (relationName.Equals("Next*", StringComparison.OrdinalIgnoreCase)) return RelationType.NEXT_STAR;
             else throw new ArgumentException("Nie rozpoznano relacji.");
         }
+
     }
 }
