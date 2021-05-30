@@ -9,7 +9,8 @@ namespace PQLTestingConsole
         static void Main(string[] args)
         {
             var queryPreprocessor = new QueryPreprocessor();
-            string query = "assign a,a1; stmt s,s1; variable v; procedure p; constant c; select p with v.varName=p.procName";
+          
+            string query = "select BOOLEAN such that Next* (20,620)";
             QueryTree queryTree = queryPreprocessor.ParseQuery(query);
             QueryEvaluator queryEvaluator = new QueryEvaluator();
             // List<object> queryResultsRaw = queryEvaluator.GetQueryResultsRaw(queryTree);
