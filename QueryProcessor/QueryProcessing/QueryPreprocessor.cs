@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace QueryProcessor
+namespace QueryProcessor.QueryProcessing
 {
     public class QueryPreprocessor
     {
@@ -98,14 +98,25 @@ namespace QueryProcessor
             if (withIndex + 1 != endWith && withIndex!=-1)
             {
                 string withCondition = splitedQuery[withIndex + 1];
-                List<string> splittedWithCondition = withCondition.Split('.', StringSplitOptions.RemoveEmptyEntries).ToList();
-                string synonimName = splittedWithCondition?.ElementAtOrDefault(0);//s2
-                string[] attributeWithValue = splittedWithCondition?.ElementAtOrDefault(1)?.Split('=', StringSplitOptions.RemoveEmptyEntries);//stmt#, 5
-                SectionNode withNode = new SectionNode { NodeType = NodeType.WITH };
-                SynonimNode synonimNode = new SynonimNode(_symbolTable.GetSynonimType(synonimName), synonimName);
+                List<string> splittedWithCondition = withCondition.Split('=', StringSplitOptions.RemoveEmptyEntries).ToList();
+                string leftSide = splittedWithCondition[0];
+                string rightSide = splittedWithCondition[1];
 
-                AttributeNode attributeNode = new AttributeNode(attributeWithValue[0], attributeWithValue[1], synonimNode);
-                withNode.Childrens.Add(attributeNode);
+                SectionNode withNode = new SectionNode { NodeType = NodeType.WITH };
+                string[] splittedLeftSide = leftSide.Split('.', StringSplitOptions.RemoveEmptyEntries);
+                SynonimNode leftSideSynonimNode = new SynonimNode(_symbolTable.GetSynonimType(splittedLeftSide[0]), splittedLeftSide[0]);
+                AttributeNode leftSideAttributeNode;
+                if (IsConst(rightSide))
+                    leftSideAttributeNode = new AttributeNode(splittedLeftSide[1], rightSide, leftSideSynonimNode);
+                else
+                {
+                    string[] splittedRigtSide = rightSide.Split('.', StringSplitOptions.RemoveEmptyEntries);
+                    SynonimNode rightSideSynonimNode = new SynonimNode(_symbolTable.GetSynonimType(splittedRigtSide[0]), splittedRigtSide[0]);
+                    AttributeNode rightSideAttributeNode = new AttributeNode(splittedRigtSide[1], rightSideSynonimNode);
+                    leftSideAttributeNode = new AttributeNode(splittedLeftSide[1], rightSideAttributeNode, leftSideSynonimNode);
+                    rightSideAttributeNode.AttributeValue = leftSideAttributeNode;
+                }
+                withNode.Childrens.Add(leftSideAttributeNode);
                 return withNode;
             }
             else return null;
@@ -131,6 +142,13 @@ namespace QueryProcessor
             return endSuchThat;
         }
 
-   
+        private bool IsConst(string phrase)
+        {
+            if (int.TryParse(phrase, out _))
+                return true;
+            phrase = phrase.Replace("\"", "");
+            return !phrase.Any(ch => !char.IsLetter(ch));
+        }
+
     }
 }
