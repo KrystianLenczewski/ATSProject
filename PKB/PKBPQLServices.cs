@@ -135,102 +135,6 @@ namespace PKB
             throw new NotImplementedException();
         }
 
-        /*
-
-        
-
-        public static List<Variable> GetModified(this IPKBStore pkb, Statement statement)
-        {
-            var modified = pkb.ModifiesList.Where(x => x.Value.Line == statement.ProgramLine).Select(x => new Variable
-            {
-                Name = x.Value.Name,
-            });
-            return modified.ToList();
-        }
-        public static List<Variable> GetModified(this IPKBStore pkb, Procedure procedure)
-        {
-            var modified = pkb.ModifiesList.Where(x => x.Value.Name == procedure.Name).Select(x => new Variable
-            {
-                Name = x.Value.Name
-            });
-            return modified.ToList();
-        }
-        public static List<Statement> GetModifiesStatements(this IPKBStore pkb, Variable variable)
-        {
-            var modifies = pkb.ModifiesList.Where(x => x.Key.Name == variable.Name).Select(x => new Statement
-            {
-                ProgramLine = x.Key.Line
-            });
-            return modifies.ToList();
-        }
-        public static List<Procedure> GetModifiesProcedures(this IPKBStore pkb, Variable variable)
-        {
-            var modifies = pkb.ModifiesList.Where(x => x.Key.Name == variable.Name).Select(x => new Procedure
-            {
-                Name = x.Key.Name
-            });
-            return modifies.ToList();
-        }
-        public static bool IsModified(this IPKBStore pkb, Variable variable, Statement statement)
-        {
-            return pkb.ModifiesList.Any(x => x.Value.Line == statement.ProgramLine && x.Key.Name == variable.Name);
-        }
-        public static bool IsModified(this IPKBStore pkb, Variable variable, Procedure procedure)
-        {
-            return pkb.ModifiesList.Any(x => x.Value.Name == procedure.Name && x.Key.Name == variable.Name);
-        }
-        //follows
-        public static Statement GetFollows(this IPKBStore pkb, Statement statement)
-        {
-            var follows = pkb.FollowsList.Where(x => x.Value.Line == statement.ProgramLine).Select(x => new Statement
-            {
-                ProgramLine = x.Value.Line
-            });
-            return (follows.Any()) ? follows.FirstOrDefault() : null;
-        }
-        public static Statement GetFollowed(this IPKBStore pkb, Statement statement)
-        {
-            var followed = pkb.FollowsList.Where(x => x.Key.Line == statement.ProgramLine).Select(x => new Statement
-            {
-                ProgramLine = x.Key.Line
-            });
-            return followed.FirstOrDefault();
-        }
-        public static List<Statement> GetFollowsStar(this IPKBStore pkb, Statement statement)
-        {
-            throw new NotImplementedException();
-            /*var result = new List<Statement>();
-            var follows = pkb.GetFollows(statement);
-            while (follows == null)
-            {
-
-            }
-            return result
-                var result = new List<Statement> { pkb.GetFollows(statement) };
-
-
-        }
-        public static List<Statement> GetFollowedStar(this IPKBStore pkb, Statement statement)
-        {
-            var nodes = new List<KeyValuePair<ExpressionModel, ExpressionModel>>();
-            KeyValuePair<ExpressionModel, ExpressionModel>? followed = null;
-            do
-            {
-                followed = pkb.FollowsList.FirstOrDefault(x => x.Key.Line == statement.ProgramLine);
-                if (followed.HasValue) nodes.Add(followed.Value);
-            } while (followed.HasValue);
-
-            return nodes.Select(x => new Statement
-            {
-                ProgramLine = x.Key.Line
-            }).ToList();
-        }
-        public static bool IsFollows(this IPKBStore pkb, Statement stmt1, Statement stmt2)
-        {
-            return pkb.FollowsList.Any(x => x.Key.Line == stmt1.ProgramLine && x.Value.Line == stmt2.ProgramLine);
-        }
-        */
-
         private static Statement CreateStatamentOfType(ExpressionType type, int programLine) => type switch
             {
                 ExpressionType.ASSIGN => new Assign { ProgramLine = programLine },
@@ -298,5 +202,38 @@ namespace PKB
         {
             throw new NotImplementedException();
         }
+
+        //Calls
+        //which procedures calls procedure p?
+        public static List<Procedure> GetCalls(this IPKBStore pkb, Procedure p)
+        {
+            throw new NotImplementedException();
+        }
+        //Which procedures are called from procedure p?
+        public static List<Procedure> GetCalledFrom(this IPKBStore pkb, Procedure p)
+        {
+            throw new NotImplementedException();
+        }
+        //Does procedure p call q?
+        public static bool IsCalls(this IPKBStore pkb, Procedure p, Procedure q)
+        {
+            throw new NotImplementedException();
+        }
+        //which procedures call procedure p?
+        public static List<Procedure> GetCallsStar(this IPKBStore pkb, Procedure p)
+        {
+            throw new NotImplementedException();
+        }
+        //Which procedures are called from p?
+        public static List<Procedure> GetCalledStarFrom(this IPKBStore pkb, Procedure p)
+        {
+            throw new NotImplementedException();
+        }
+        //Does procedure p call q?
+        public static bool IsCallsStar(this IPKBStore pkb, Procedure p, Procedure q)
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }

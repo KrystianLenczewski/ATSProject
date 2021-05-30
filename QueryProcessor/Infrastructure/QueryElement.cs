@@ -10,5 +10,6 @@ namespace QueryProcessor.Infrastructure
         internal const string SuchThat = "Such That";
         internal const string With = "with";
         internal const string Pattern = "pattern";
+        internal const string And = "and";
     }
 }
