@@ -27,10 +27,10 @@ namespace TestPKB
         [InlineData(SpecialType.STMTLST)]
         public void SetParentProcedureListTest(SpecialType s)
         {
-            var procedureObj = new ExpressionModel(SpecialType.PROCEDURE,0);
-            var sObj = new ExpressionModel(s,0);
+            var procedureObj = new ExpressionModel(SpecialType.PROCEDURE);
+            var sObj = new ExpressionModel(s);
             var pkb = new PKBStore();
-            var x = new ExpressionModel(FactorType.VAR, "x", 0);
+            var x = new ExpressionModel(FactorType.VAR, "x");
             pkb.SetParent(procedureObj, x, 0);
             pkb.SetParent(procedureObj, sObj, 1);
             Assert.Equal(pkb.ParentList.Last().Child, sObj);
@@ -40,8 +40,8 @@ namespace TestPKB
         [InlineData(FactorType.VAR)]
         public void SetParentProcedureFactorTest(FactorType s)
         {
-            var parentObj = new ExpressionModel(SpecialType.PROCEDURE,0);
-            var sObj = new ExpressionModel(s, "x",0);
+            var parentObj = new ExpressionModel(SpecialType.PROCEDURE);
+            var sObj = new ExpressionModel(s, "x");
             var pkb = new PKBStore();
             var testObj = new ParentModel(parentObj, sObj, 0);
             pkb.SetParent(testObj.Parent, testObj.Child, testObj.Index);
@@ -58,7 +58,7 @@ namespace TestPKB
         [InlineData(StatementType.WHILE)]
         public void SetParentStmtLstTest(StatementType s)
         {
-            var parentObj = new ExpressionModel(SpecialType.STMTLST,0);
+            var parentObj = new ExpressionModel(SpecialType.STMTLST);
             var sObj = new ExpressionModel(s,0);
             var pkb = new PKBStore();
             var testObj = new ParentModel(parentObj, sObj, 0);
