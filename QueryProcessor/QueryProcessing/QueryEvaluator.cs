@@ -72,12 +72,12 @@ namespace QueryProcessor.QueryProcessing
                 {
 
                     Statement statement = IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[0]);
-                    _resultProcessor.AddRelationResult(_pkbStore.IsModified(variable, statement));
+                    // _resultProcessor.AddRelationResult(_pkbStore.IsModified(variable, statement));
                 }
                 else
                 {
                     Procedure procedure = IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[0]);
-                    _resultProcessor.AddRelationResult(_pkbStore.IsModified(variable, procedure));
+                    // _resultProcessor.AddRelationResult(_pkbStore.IsModified(variable, procedure));
                 }
 
             }
@@ -85,25 +85,25 @@ namespace QueryProcessor.QueryProcessing
             {
                 if (resultChildren.SynonimType == SynonimType.Variable && relationNode.Arguments[0].IsStatement())
                 {
-                    List<Variable> variables = _pkbStore.GetModified(IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[0]));
-                    _resultProcessor.AddRelationResult(SynonimType.Variable, variables);
+                    // List<Variable> variables = _pkbStore.GetModified(IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[0]));
+                    // _resultProcessor.AddRelationResult(SynonimType.Variable, variables);
                 }
                 else if (resultChildren.SynonimType == SynonimType.Variable && relationNode.Arguments[0].RelationArgumentType == RelationArgumentType.Procedure)
                 {
-                    List<Variable> variables = _pkbStore.GetModified(IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[0]));
-                    _resultProcessor.AddRelationResult(SynonimType.Variable, variables);
+                    // List<Variable> variables = _pkbStore.GetModified(IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[0]));
+                    // _resultProcessor.AddRelationResult(SynonimType.Variable, variables);
                 }
                 else if (resultChildren.IsStamement() && (relationNode.Arguments[1].RelationArgumentType == RelationArgumentType.Variable ||
                     relationNode.Arguments[1].RelationArgumentType == RelationArgumentType.String))
                 {
-                    List<Statement> statements = _pkbStore.GetModifiesStatements(IntegrationModelCreator.CreateVariableForArgumentNode(relationNode.Arguments[1]));
-                    _resultProcessor.AddRelationResult(SynonimType.Statement, statements);
+                    // List<Statement> statements = _pkbStore.GetModifiesStatements(IntegrationModelCreator.CreateVariableForArgumentNode(relationNode.Arguments[1]));
+                    // _resultProcessor.AddRelationResult(SynonimType.Statement, statements);
                 }
                 else if (resultChildren.SynonimType == SynonimType.Procedure && (relationNode.Arguments[1].RelationArgumentType == RelationArgumentType.Variable ||
                     relationNode.Arguments[1].RelationArgumentType == RelationArgumentType.String))
                 {
-                    List<Procedure> procedures = _pkbStore.GetModifiesProcedures(IntegrationModelCreator.CreateVariableForArgumentNode(relationNode.Arguments[1]));
-                    _resultProcessor.AddRelationResult(SynonimType.Procedure, procedures);
+                    // List<Procedure> procedures = _pkbStore.GetModifiesProcedures(IntegrationModelCreator.CreateVariableForArgumentNode(relationNode.Arguments[1]));
+                    // _resultProcessor.AddRelationResult(SynonimType.Procedure, procedures);
                 }
 
             }
@@ -115,19 +115,19 @@ namespace QueryProcessor.QueryProcessing
             {
                 Statement stmt1 = IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[0]);
                 Statement stmt2 = IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[1]);
-                _resultProcessor.AddRelationResult(_pkbStore.IsFollows(stmt1, stmt2));
+                // _resultProcessor.AddRelationResult(_pkbStore.IsFollows(stmt1, stmt2));
             }
             else
             {
                 if (relationNode.Arguments[1].RelationArgumentType == RelationArgumentType.Integer)
                 {
-                    Statement statement = _pkbStore.GetFollows(IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[1]));
-                    _resultProcessor.AddRelationResult(SynonimType.Statement, new List<Statement> { statement });
+                    // Statement statement = _pkbStore.GetFollows(IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[1]));
+                    // _resultProcessor.AddRelationResult(SynonimType.Statement, new List<Statement> { statement });
                 }
                 else if (relationNode.Arguments[0].RelationArgumentType == RelationArgumentType.Integer)
                 {
-                    Statement statement = _pkbStore.GetFollowed(IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[0]));
-                    _resultProcessor.AddRelationResult(SynonimType.Statement, new List<Statement> { statement });
+                    // Statement statement = _pkbStore.GetFollowed(IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[0]));
+                    // _resultProcessor.AddRelationResult(SynonimType.Statement, new List<Statement> { statement });
                 }
             }
         }
@@ -136,13 +136,13 @@ namespace QueryProcessor.QueryProcessing
         {
             if (relationNode.Arguments[1].RelationArgumentType == RelationArgumentType.Integer)
             {
-                List<Statement> statements = _pkbStore.GetFollowsStar(IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[1]));
-                _resultProcessor.AddRelationResult(SynonimType.Statement, statements);
+                // List<Statement> statements = _pkbStore.GetFollowsStar(IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[1]));
+                // _resultProcessor.AddRelationResult(SynonimType.Statement, statements);
             }
             else if (relationNode.Arguments[0].RelationArgumentType == RelationArgumentType.Integer)
             {
-                List<Statement> statements = _pkbStore.GetFollowedStar(IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[0]));
-                _resultProcessor.AddRelationResult(SynonimType.Statement, statements);
+                // List<Statement> statements = _pkbStore.GetFollowedStar(IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[0]));
+                // _resultProcessor.AddRelationResult(SynonimType.Statement, statements);
             }
         }
 

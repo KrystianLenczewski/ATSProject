@@ -13,7 +13,7 @@ namespace PQLTestingConsole
             string query = "select BOOLEAN such that Next* (20,620)";
             QueryTree queryTree = queryPreprocessor.ParseQuery(query);
             QueryEvaluator queryEvaluator = new QueryEvaluator();
-            string queryResultsRaw = queryEvaluator.GetQueryResultsRaw(queryTree);
+            // List<object> queryResultsRaw = queryEvaluator.GetQueryResultsRaw(queryTree);
         }
     }
 }
