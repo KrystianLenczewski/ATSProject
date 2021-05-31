@@ -10,7 +10,8 @@
         VAR,
         CONST,
         IF,
-        CALL
+        CALL,
+        NULL
     }
 
     public enum OperationsType
@@ -44,11 +45,10 @@
         public string Name { get; private set; }
         public int Line { get; set; }
 
-        public ExpressionModel(FactorType type, string name, int line)
+        public ExpressionModel(FactorType type, string name)
         {
             Type = (ExpressionType)type;
             Name = name;
-            Line = line;
         }
 
         public ExpressionModel(StatementType type, int line)
@@ -57,10 +57,9 @@
             Line = line;
         }
 
-        public ExpressionModel(SpecialType type, int line)
+        public ExpressionModel(SpecialType type)
         {
             Type = (ExpressionType)type;
-            Line = line;
         }
 
         public ExpressionModel(OperationsType type, int line)
