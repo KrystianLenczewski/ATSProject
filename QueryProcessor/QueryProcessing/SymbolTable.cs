@@ -10,6 +10,7 @@ namespace QueryProcessor.QueryProcessing
     internal class SymbolTable
     {
         Dictionary<string, RelationArgumentType> querySymbols = new Dictionary<string, RelationArgumentType>();
+        public Dictionary<string, RelationArgumentType> QuerySymbols { get => querySymbols; }
 
         public SymbolTable(string query)
         {

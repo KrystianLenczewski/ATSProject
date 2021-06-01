@@ -9,12 +9,15 @@ namespace QueryProcessor.QueryProcessing
 {
     public class QueryTree
     {
+        private readonly Dictionary<string, RelationArgumentType> _declarations;
         private readonly SectionNode _rootNode = new SectionNode();
 
-        public QueryTree()
+        public QueryTree(Dictionary<string, RelationArgumentType> declarations)
         {
-
+            _declarations = declarations;
         }
+
+        public Dictionary<string, RelationArgumentType> GetDeclarations() => _declarations;
 
         public void AddSuchThatNode(SectionNode suchThatNode)
         {

@@ -1,7 +1,9 @@
 ﻿using PKB;
 using QueryProcessor.Enums;
 using QueryProcessor.Infrastructure;
+using QueryProcessor.Moqs;
 using QueryProcessor.QueryTreeNodes;
+using QueryProcessor.ResultGeneration;
 using Shared;
 using Shared.PQLModels;
 using System;
@@ -14,189 +16,133 @@ namespace QueryProcessor.QueryProcessing
     public class QueryEvaluator
     {
         private readonly PKBStore _pkbStore;
-        private readonly ResultProcessor _resultProcessor;
+        private ResultTable _resultTable;
+        private readonly Dictionary<string, List<string>> _candidates = new Dictionary<string, List<string>>();
+
 
         public QueryEvaluator()
         {
-            //_pkbStore = PKBStore.Instance;
-            //_resultProcessor = new ResultProcessor(_pkbStore);
+            _pkbStore = PKBInitializer.InitializePKB();
         }
 
-        public string GetQueryResultsRaw(QueryTree queryTree)
+        public List<string> GetQueryResultsRaw(QueryTree queryTree)
         {
             queryTree.PrepareTreeForQueryEvaluator();
-            List<RelationNode> relationNodes = queryTree.GetRelationNodes();
-            List<SynonimNode> resultChildrens = queryTree.GetResultNodeChildrens();
+            PrepareCandidatesDictionary(queryTree.GetDeclarations() ?? new Dictionary<string, RelationArgumentType>());
+            _resultTable = new ResultTable(queryTree.GetDeclarations().Keys.ToList() ?? new List<string>());
 
-            bool isResultBoolean = queryTree.IsResultBoolean();
-            HandleRelations(relationNodes, isResultBoolean, resultChildrens.FirstOrDefault());
+            List<RelationNode> relations = queryTree.GetRelationNodes();
+            HandleRelations(relations);
+            List<string> resultSynonimNames = queryTree.GetResultNodeChildrens().Select(s=>s.Name).ToList();
 
-            return _resultProcessor.GetResult(resultChildrens.Select(s=>s.SynonimType).ToArray());
+            return _resultTable.GetResult(_candidates, resultSynonimNames.ToArray());
         }
 
-        private void HandleRelations(List<RelationNode> relationNodes, bool isResultBoolean, SynonimNode resultSynonim)
+        private void HandleRelations(List<RelationNode> relationNodes)
         {
-            foreach (RelationNode item in relationNodes)
+            foreach (RelationNode relationNode in relationNodes)
             {
-                switch (item.RelationType)
-                {
-                    case RelationType.MODIFIES:
-                        HandleModifies(item, isResultBoolean, resultSynonim);
-                        break;
-                    case RelationType.FOLLOWS:
-                        HandleFollows(item, isResultBoolean, resultSynonim);
-                        break;
-                    case RelationType.FOLLOWS_STAR:
-                        HandleFollowStar(item, isResultBoolean, resultSynonim);
-                        break;
-                    case RelationType.CALLS:
-                        HandleCalls(item, isResultBoolean, resultSynonim);
-                        break;
-                    case RelationType.CALLS_STAR:
-                        HandleCallsStar(item, isResultBoolean, resultSynonim);
-                        break;
-                    default:
-                        break;
-                }
-                //Modifies(s1,s2)
+                if (relationNode.RelationType == RelationType.PARENT)
+                    HandleParent(relationNode);
             }
         }
 
-        private void HandleModifies(RelationNode relationNode, bool isResultBoolean, SynonimNode resultChildren)
+        private void HandleParent(RelationNode relationParentNode)
         {
-
-            if (isResultBoolean)
+            ArgumentNode arg1 = relationParentNode.Arguments[0];
+            ArgumentNode arg2 = relationParentNode.Arguments[1];
+            if (_candidates.ContainsKey(arg1.Name) && _candidates.ContainsKey(arg2.Name))
             {
-                Variable variable = IntegrationModelCreator.CreateVariableForArgumentNode(relationNode.Arguments[1]);
-                if (relationNode.Arguments[0].IsStatement())
+                List<string> arg1CandidatesToRemove = new List<string>();
+                List<string> arg2Candidates = new List<string>();
+                foreach (var line in _candidates[arg1.Name])
                 {
+                    var result = _pkbStore.GetChildren(int.Parse(line)).Select(s => s.ProgramLine.ToString());
+                    if (result.Any())
+                    {
+                        foreach (var arg2Line in result)
+                            _resultTable.AddRelationResult(arg1.Name, line, arg2.Name, arg2Line);
+                        arg2Candidates.AddRange(result);
+                        arg2Candidates = arg2Candidates.Distinct().ToList();
+                    }
+                    else
+                        arg1CandidatesToRemove.Add(line);
+                }
+                List<string> arg2CandidatesToRemove = _candidates[arg2.Name].Where(w => !arg2Candidates.Contains(w)).ToList();
+                RemoveCandidates(arg1.Name, arg1CandidatesToRemove);
+                RemoveCandidates(arg2.Name, arg2CandidatesToRemove);
+            }
+            else if (_candidates.ContainsKey(arg1.Name))
+            {
+                List<string> parents = _pkbStore.GetParents(int.Parse(arg2.Value)).Select(s => s.ProgramLine.ToString()).ToList();
+                foreach (string arg1Line in parents)
+                    _resultTable.AddRelationResult(arg1.Name, arg1Line);
 
-                    Statement statement = IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[0]);
-                    // _resultProcessor.AddRelationResult(_pkbStore.IsModified(variable, statement));
+                List<string> arg1CandidatesToRemove = _candidates[arg1.Name].Where(w => !parents.Contains(w)).ToList(); ;
+                RemoveCandidates(arg1.Name, arg1CandidatesToRemove);
+            }
+            else if (_candidates.ContainsKey(arg2.Name))
+            {
+                List<string> children = _pkbStore.GetChildren(int.Parse(arg1.Value)).Select(s => s.ProgramLine.ToString()).ToList();
+                foreach (string arg2Line in children)
+                    _resultTable.AddRelationResult(arg2.Name, arg2Line);
+
+                List<string> arg2CandidatesToRemove = _candidates[arg2.Name].Where(w => !children.Contains(w)).ToList();
+                RemoveCandidates(arg2.Name, arg2CandidatesToRemove);
+            }
+            else
+            {
+                List<string> children = _pkbStore.GetChildren(int.Parse(arg1.Value)).Select(s => s.ProgramLine.ToString()).ToList();
+                if (!children.Contains(arg2.Value))
+                    _resultTable.SetFalseBoolResult();
+            }
+        }
+
+        private void RemoveCandidates(string synonimName, List<string> candidatesToRemove)
+        {
+            if (_candidates.TryGetValue(synonimName, out List<string> candidates))
+            {
+                foreach (var candidateToRemove in candidatesToRemove)
+                {
+                    _candidates[synonimName].Remove(candidateToRemove);
+                }
+                _resultTable.RefreshCandidates(synonimName, _candidates[synonimName]);
+            }
+        }
+
+        private void PrepareCandidatesDictionary(Dictionary<string, RelationArgumentType> declarations)
+        {
+            foreach (var declarationsPair in declarations)
+            {
+                ExpressionType? expressionType = ToExpressionType(declarationsPair.Value);
+                if (expressionType.HasValue)
+                {
+                    _candidates[declarationsPair.Key] = new List<string>();
+                    _candidates[declarationsPair.Key].AddRange(_pkbStore.GetChildren(0, expressionType.Value).Select(s => s.ProgramLine.ToString()).Distinct().ToList() ?? new List<string>());
                 }
                 else
                 {
-                    Procedure procedure = IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[0]);
-                    // _resultProcessor.AddRelationResult(_pkbStore.IsModified(variable, procedure));
-                }
-
-            }
-            else
-            {
-                if (resultChildren.SynonimType == SynonimType.Variable && relationNode.Arguments[0].IsStatement())
-                {
-                    // List<Variable> variables = _pkbStore.GetModified(IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[0]));
-                    // _resultProcessor.AddRelationResult(SynonimType.Variable, variables);
-                }
-                else if (resultChildren.SynonimType == SynonimType.Variable && relationNode.Arguments[0].RelationArgumentType == RelationArgumentType.Procedure)
-                {
-                    // List<Variable> variables = _pkbStore.GetModified(IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[0]));
-                    // _resultProcessor.AddRelationResult(SynonimType.Variable, variables);
-                }
-                else if (resultChildren.IsStamement() && (relationNode.Arguments[1].RelationArgumentType == RelationArgumentType.Variable ||
-                    relationNode.Arguments[1].RelationArgumentType == RelationArgumentType.String))
-                {
-                    // List<Statement> statements = _pkbStore.GetModifiesStatements(IntegrationModelCreator.CreateVariableForArgumentNode(relationNode.Arguments[1]));
-                    // _resultProcessor.AddRelationResult(SynonimType.Statement, statements);
-                }
-                else if (resultChildren.SynonimType == SynonimType.Procedure && (relationNode.Arguments[1].RelationArgumentType == RelationArgumentType.Variable ||
-                    relationNode.Arguments[1].RelationArgumentType == RelationArgumentType.String))
-                {
-                    // List<Procedure> procedures = _pkbStore.GetModifiesProcedures(IntegrationModelCreator.CreateVariableForArgumentNode(relationNode.Arguments[1]));
-                    // _resultProcessor.AddRelationResult(SynonimType.Procedure, procedures);
-                }
-
-            }
-        }
-
-        private void HandleFollows(RelationNode relationNode, bool isResultBoolean, SynonimNode resultChildren)
-        {
-            if (isResultBoolean)
-            {
-                Statement stmt1 = IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[0]);
-                Statement stmt2 = IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[1]);
-                // _resultProcessor.AddRelationResult(_pkbStore.IsFollows(stmt1, stmt2));
-            }
-            else
-            {
-                if (relationNode.Arguments[1].RelationArgumentType == RelationArgumentType.Integer)
-                {
-                    // Statement statement = _pkbStore.GetFollows(IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[1]));
-                    // _resultProcessor.AddRelationResult(SynonimType.Statement, new List<Statement> { statement });
-                }
-                else if (relationNode.Arguments[0].RelationArgumentType == RelationArgumentType.Integer)
-                {
-                    // Statement statement = _pkbStore.GetFollowed(IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[0]));
-                    // _resultProcessor.AddRelationResult(SynonimType.Statement, new List<Statement> { statement });
+                    _candidates[declarationsPair.Key] = new List<string>();
+                    _candidates[declarationsPair.Key].AddRange(_pkbStore.GetChildren(0, ExpressionType.NULL).Select(s => s.ProgramLine.ToString()).Distinct().ToList() ?? new List<string>());
                 }
             }
         }
 
-        private void HandleFollowStar(RelationNode relationNode, bool isResultBoolean, SynonimNode resultChildren)
+        private ExpressionType? ToExpressionType(RelationArgumentType relationArgumentType)
         {
-            if (relationNode.Arguments[1].RelationArgumentType == RelationArgumentType.Integer)
+            return relationArgumentType switch
             {
-                // List<Statement> statements = _pkbStore.GetFollowsStar(IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[1]));
-                // _resultProcessor.AddRelationResult(SynonimType.Statement, statements);
-            }
-            else if (relationNode.Arguments[0].RelationArgumentType == RelationArgumentType.Integer)
-            {
-                // List<Statement> statements = _pkbStore.GetFollowedStar(IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[0]));
-                // _resultProcessor.AddRelationResult(SynonimType.Statement, statements);
-            }
-        }
-
-        private void HandleCalls(RelationNode relationNode, bool isResultBoolean, SynonimNode resultChildren)
-        {
-            if (isResultBoolean)
-            {
-                Procedure proc1 = IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[0]);
-                Procedure proc2 = IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[1]);
-                _resultProcessor.AddRelationResult(_pkbStore.IsCalls(proc1, proc2));
-            }
-            else
-            {
-                if (relationNode.Arguments[1].RelationArgumentType == RelationArgumentType.Procedure)
-                {
-                    List<Procedure> procedures = _pkbStore.GetCalls(IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[1]));
-                    _resultProcessor.AddRelationResult(SynonimType.Procedure, procedures);
-                }
-                else if (relationNode.Arguments[0].RelationArgumentType == RelationArgumentType.Procedure)
-                {
-                    List<Procedure> procedures = _pkbStore.GetCalledFrom(IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[0]));
-                    _resultProcessor.AddRelationResult(SynonimType.Procedure, procedures);
-                }
-            }
-        }
-
-        private void HandleCallsStar(RelationNode relationNode, bool isResultBoolean, SynonimNode resultChildren)
-        {
-            if (isResultBoolean)
-            {
-                Procedure proc1 = IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[0]);
-                Procedure proc2 = IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[1]);
-                _resultProcessor.AddRelationResult(_pkbStore.IsCallsStar(proc1, proc2));
-            }
-            else
-            {
-                if (relationNode.Arguments[1].RelationArgumentType == RelationArgumentType.Procedure)
-                {
-                    List<Procedure> procedures = _pkbStore.GetCallsStar(IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[1]));
-                    _resultProcessor.AddRelationResult(SynonimType.Procedure, procedures);
-                }
-                else if (relationNode.Arguments[0].RelationArgumentType == RelationArgumentType.Procedure)
-                {
-                    List<Procedure> procedures = _pkbStore.GetCalledStarFrom(IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[0]));
-                    _resultProcessor.AddRelationResult(SynonimType.Procedure, procedures);
-                }
-            }         
+                RelationArgumentType.Assign => ExpressionType.ASSIGN,
+                RelationArgumentType.Call => ExpressionType.CALL,
+                RelationArgumentType.Constant => ExpressionType.CONST,
+                RelationArgumentType.If => ExpressionType.IF,
+                RelationArgumentType.Procedure => ExpressionType.PROCEDURE,
+                RelationArgumentType.Statement => null,
+                RelationArgumentType.Variable => ExpressionType.VAR,
+                RelationArgumentType.While => ExpressionType.WHILE,
+                _ => null
+            };
         }
 
     }
-
-    //zwracala varset, stmtset,
-    //private  GetResultForModifies
-    //getModified (STMT stmt) - mozemy przekazac stmt bez typu, albo z typem, 
-    //getModifies (VAR var) - mozemy podac tylko anzwe zmiennej 
-    //pamietaj ze mozemy wyslac tylko linie programu bez typu 
 }
