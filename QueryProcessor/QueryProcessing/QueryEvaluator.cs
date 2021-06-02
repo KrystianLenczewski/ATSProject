@@ -44,7 +44,15 @@ namespace QueryProcessor.QueryProcessing
             {
                 if (relationNode.RelationType == RelationType.PARENT)
                     HandleParent(relationNode);
+                if (relationNode.RelationType == RelationType.FOLLOWS)
+                    HandleFollows(relationNode);
+
             }
+        }
+
+        private void HandleFollows(RelationNode relationFollowsNode)
+        {
+
         }
 
         private void HandleParent(RelationNode relationParentNode)

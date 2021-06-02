@@ -13,6 +13,16 @@ namespace QueryProcessor.Moqs
             var pkb = new PKBStore();
 
             // parents/children
+            pkb.ParentList.Add(new ParentModel(new ExpressionModel(SpecialType.PROCEDURE), new ExpressionModel(StatementType.ASSIGN, 1), 1));
+            pkb.ParentList.Add(new ParentModel(new ExpressionModel(SpecialType.PROCEDURE), new ExpressionModel(StatementType.ASSIGN, 2), 1));
+            pkb.ParentList.Add(new ParentModel(new ExpressionModel(SpecialType.PROCEDURE), new ExpressionModel(StatementType.ASSIGN, 3), 1));
+            pkb.ParentList.Add(new ParentModel(new ExpressionModel(SpecialType.PROCEDURE), new ExpressionModel(StatementType.ASSIGN, 4), 1));
+            pkb.ParentList.Add(new ParentModel(new ExpressionModel(SpecialType.PROCEDURE), new ExpressionModel(StatementType.ASSIGN, 5), 1));
+            pkb.ParentList.Add(new ParentModel(new ExpressionModel(SpecialType.PROCEDURE), new ExpressionModel(StatementType.ASSIGN, 6), 1));
+            pkb.ParentList.Add(new ParentModel(new ExpressionModel(SpecialType.PROCEDURE), new ExpressionModel(StatementType.ASSIGN, 7), 1));
+            pkb.ParentList.Add(new ParentModel(new ExpressionModel(SpecialType.PROCEDURE), new ExpressionModel(StatementType.ASSIGN, 8), 1));
+            pkb.ParentList.Add(new ParentModel(new ExpressionModel(SpecialType.PROCEDURE), new ExpressionModel(StatementType.ASSIGN, 17), 1));
+
             pkb.ParentList.Add(new ParentModel(new ExpressionModel(StatementType.IF, 8), new ExpressionModel(StatementType.WHILE, 10), 1));
             pkb.ParentList.Add(new ParentModel(new ExpressionModel(StatementType.IF, 8), new ExpressionModel(StatementType.WHILE, 13), 1));
             pkb.ParentList.Add(new ParentModel(new ExpressionModel(StatementType.IF, 8), new ExpressionModel(StatementType.WHILE, 14), 1));

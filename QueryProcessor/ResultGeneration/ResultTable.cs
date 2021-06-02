@@ -14,7 +14,7 @@ namespace QueryProcessor.ResultGeneration
 
         public ResultTable(List<string> declaredSynonims)
         {
-            _declaredSynonims = declaredSynonims;
+            _declaredSynonims = declaredSynonims.Where(w=>!w.Equals("boolean", StringComparison.OrdinalIgnoreCase)).ToList();
         }
 
         public List<string> GetResult(Dictionary<string, List<string>> candidates, params string[] synonimNames)
