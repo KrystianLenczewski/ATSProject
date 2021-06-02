@@ -8,7 +8,7 @@ namespace Shared
     {
         public ExpressionModel Parent { get; private set; }
         public ExpressionModel Child { get; private set; }
-        public int Index { get; private set; }
+        public int Index { get; set; }
 
         public ParentModel(ExpressionModel parent, ExpressionModel child, int index)
         {

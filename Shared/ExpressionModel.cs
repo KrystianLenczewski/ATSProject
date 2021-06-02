@@ -85,5 +85,18 @@
             Type = (ExpressionType)type;
             Line = line;
         }
+
+        public override bool Equals(object obj)
+        {
+            if ((obj == null) || !this.GetType().Equals(obj.GetType()))
+            {
+                return false;
+            }
+            else
+            {
+                ExpressionModel p = (ExpressionModel)obj;
+                return (Type == p.Type) && (Line == p.Line);
+            }
+        }
     }
 }

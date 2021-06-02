@@ -1,4 +1,5 @@
 ﻿using Shared;
+using SPAFrontend.mdoels;
 using System.Collections.Generic;
 
 namespace PKB
@@ -12,5 +13,25 @@ namespace PKB
         public static void SetModify(this IPKBStore pkb, ExpressionModel s1, ExpressionModel s2) => pkb.ModifiesList.Add(KeyValuePair.Create(s1, s2));
 
         public static void SetUses(this IPKBStore pkb, ExpressionModel s1, ExpressionModel s2) => pkb.UsesList.Add(KeyValuePair.Create(s1, s2));
+
+        public static void RebuildParentListIndexes(this IPKBStore pkb)
+        {
+            List<RownumIndex> indexes = new List<RownumIndex>();
+            pkb.ParentList.ForEach(elem =>
+            {
+                RownumIndex ri = indexes.Find(i => i.rownum == elem.Parent.Line);
+                if (ri != null)
+                {
+                    ri.index++;
+                    elem.Index = ri.index;
+                }
+                else
+                {
+                    indexes.Add(new RownumIndex(elem.Parent.Line, 1));
+                    elem.Index = 1;
+                }
+            });
+            pkb.ToString();
+        }
     }
 }
