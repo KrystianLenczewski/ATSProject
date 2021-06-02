@@ -55,32 +55,77 @@ namespace QueryProcessor.QueryProcessing
         }
         private bool ValidateQueryStructure(string query)
         {
-            List<string> splitedQuery = query.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
-            splitedQuery.ForEach(x => x.Trim().ToLower());
 
-            int selectIndex = splitedQuery.IndexOf(QueryElement.Select.ToLower());
-            int suchThatIndex = GetIndexForSuchThat(splitedQuery);
-            int withIndex = splitedQuery.IndexOf(QueryElement.With.ToLower());
-            int patternIndex = splitedQuery.IndexOf(QueryElement.Pattern.ToLower());
+            //select p with p.procName=\"Second\" with ..... such that Calls(p,q) such that Modifies() with 
 
-            int endSelectIndex = suchThatIndex - 1;
-            if (suchThatIndex == -1) endSelectIndex = withIndex == -1 ? patternIndex : withIndex;
-            endSelectIndex = endSelectIndex == -1 ? splitedQuery.Count : endSelectIndex;
 
-            bool selectSectionIsValid = ValidateSelectSection(splitedQuery, selectIndex, endSelectIndex);
+            List<string> splitedQuery = GetSplitedQuery(query);
 
-            int endSuchThat = withIndex == -1 ? patternIndex : withIndex;
-            endSuchThat = endSuchThat == -1 ? splitedQuery.Count : endSuchThat;
-            bool suchThatSectionIsValid = true;
-            if (suchThatIndex != -1)
-                suchThatSectionIsValid = ValidateSuchThatSection(splitedQuery, suchThatIndex, endSuchThat);
+            bool validQuery = true;
+        
+            for(int i=0; i<splitedQuery.Count; i++)
+            {
+                string keyword="";
+                string nextKeyword;
+                int endIndex=-1;
+                bool validQueryElement = true;
 
-            bool withSectionIsValid = true;
-            int endWith = patternIndex == -1 ? splitedQuery.Count : patternIndex;
-            if (withIndex != -1)
-                withSectionIsValid = ValidateWithSection(splitedQuery, withIndex, endWith);
+                keyword = QueryElement.GetKeyword(splitedQuery[i]);
 
-            return selectSectionIsValid && suchThatSectionIsValid && withSectionIsValid;
+                if(!String.IsNullOrEmpty(keyword))
+                {
+                    for (int p =i+1; p < splitedQuery.Count; p++)
+                    {
+                         nextKeyword = QueryElement.GetKeyword(splitedQuery[p]);
+                        if (!String.IsNullOrEmpty(nextKeyword)) { endIndex = p; break; }
+                    }
+                    if (endIndex == -1) endIndex = splitedQuery.Count;
+
+                    switch (keyword)
+                    {
+                        case QueryElement.Select:
+                            validQueryElement = ValidateSelectSection(splitedQuery, i, endIndex);
+                            break;
+                        case QueryElement.SuchThat:
+                            validQueryElement = ValidateSuchThatSection(splitedQuery, i, endIndex);
+                            break;
+                        case QueryElement.With:
+                            validQueryElement = ValidateWithSection(splitedQuery, i, endIndex);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+               
+                validQuery = validQuery && validQueryElement;
+            }
+
+            return validQuery;
+
+            //int selectIndex = splitedQuery.IndexOf(QueryElement.Select.ToLower());
+            //int suchThatIndex = GetIndexForSuchThat(splitedQuery);
+            //int withIndex = splitedQuery.IndexOf(QueryElement.With.ToLower());
+            //int patternIndex = splitedQuery.IndexOf(QueryElement.Pattern.ToLower());
+
+            //int endSelectIndex = suchThatIndex - 1;
+            //if (suchThatIndex == -1) endSelectIndex = withIndex == -1 ? patternIndex : withIndex;
+            //endSelectIndex = endSelectIndex == -1 ? splitedQuery.Count : endSelectIndex;
+
+            //bool selectSectionIsValid = ValidateSelectSection(splitedQuery, selectIndex, endSelectIndex);
+
+            //int endSuchThat = withIndex == -1 ? patternIndex : withIndex;
+            //endSuchThat = endSuchThat == -1 ? splitedQuery.Count : endSuchThat;
+            //bool suchThatSectionIsValid = true;
+            //if (suchThatIndex != -1)
+            //    suchThatSectionIsValid = ValidateSuchThatSection(splitedQuery, suchThatIndex, endSuchThat);
+
+            //bool withSectionIsValid = true;
+            //int endWith = patternIndex == -1 ? splitedQuery.Count : patternIndex;
+            //if (withIndex != -1)
+            //    withSectionIsValid = ValidateWithSection(splitedQuery, withIndex, endWith);
+
+            //return selectSectionIsValid && suchThatSectionIsValid && withSectionIsValid;
         }
         private bool ValidateSuchThatSection(List<string> splitedQuery, int beginIndex, int endIndex)
         {
@@ -122,9 +167,9 @@ namespace QueryProcessor.QueryProcessing
         private void ValidateAndInSuchThatSection(List<string> splitedQuery, List<string> validateErrors, int i)
         {
             // walidacja, czy po relacji i jej argumentach, jesli nie ma "with" lub "pattern", to znajduje sie "and"
-            if (splitedQuery.Count > i + 2)
+            if (splitedQuery.Count > i + 2 || splitedQuery.Count==i+2)
             {
-                if (splitedQuery[i + 2] != QueryElement.With && splitedQuery[i + 2] != QueryElement.Pattern)
+                if ((splitedQuery[i + 2] != QueryElement.With && splitedQuery[i + 2] != QueryElement.Pattern) || splitedQuery.Count!=i+2)
                 {
                     if (splitedQuery[i + 2].ToLower() != QueryElement.And)
                         validateErrors.Add($"Oczekiwano AND po relacji w Such that zamiast: {splitedQuery[i + 2]}");
@@ -177,10 +222,10 @@ namespace QueryProcessor.QueryProcessing
                         else
                             validateErrors.Add("Atrybuty po klauzuli With są nieprawidłowe.");
 
-                        if (!ValidateAndInWithSection(splitedQuery, validateErrors, i))
-                        {
-                            validateErrors.Add("Wystąpił błąd przy walidacji AND w klauzuli With.");
-                        }
+                        //if (!ValidateAndInWithSection(splitedQuery, validateErrors, i))
+                        //{
+                        //    validateErrors.Add("Wystąpił błąd przy walidacji AND w klauzuli With.");
+                        //}
                     }
                 }
             }
@@ -266,15 +311,6 @@ namespace QueryProcessor.QueryProcessing
             return validateErrors.Count == 0;
         }
 
-        private int GetIndexForSuchThat(List<string> splittedQuery)
-        {
-            int suchIndex = splittedQuery.IndexOf("such");
-            int thatIndex = splittedQuery.IndexOf("that");
-
-            if (suchIndex + 1 == thatIndex)
-                return thatIndex;
-            return -1;
-        }
 
         private bool ValidateAttributeValueType(RelationArgumentType relationArgumentType, string attributeValue)
         {
@@ -332,5 +368,28 @@ namespace QueryProcessor.QueryProcessing
             }
             return false;
         }
+        private List<string> GetSplitedQuery(string query)
+        {
+            List<string> splitedQuery = query.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
+            List<string> splitedQueryResult = new List<string>();
+            splitedQuery.ForEach(x => x.Trim().ToLower());
+          
+            for(int i=0;i<splitedQuery.Count;i++)
+            {
+                if(splitedQuery[i]=="such" && splitedQuery[i+1]=="that" && i+1<splitedQuery.Count)
+                {
+                    splitedQueryResult.Add(QueryElement.SuchThat);
+                    i++;
+                }
+                else
+                {
+                    splitedQueryResult.Add(splitedQuery[i]);
+                }
+            }
+
+            return splitedQueryResult;
+        }
+
+       
     }
 }

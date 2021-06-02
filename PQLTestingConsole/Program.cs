@@ -10,7 +10,8 @@ namespace PQLTestingConsole
         {
             var queryPreprocessor = new QueryPreprocessor();
           
-            string query = "select BOOLEAN such that Next* (20,620)";
+            string query = "procedure p,q; while w1; select p with p.procName=\"Second\" such that Modifies (p,\"z\") and Calls (p,q)";
+            //select p with p.procName=\"Second\" such that Calls(p,q) such that Modifies() with 
             QueryTree queryTree = queryPreprocessor.ParseQuery(query);
             QueryEvaluator queryEvaluator = new QueryEvaluator();
             string queryResultsRaw = queryEvaluator.GetQueryResultsRaw(queryTree);
