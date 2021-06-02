@@ -21,8 +21,12 @@
 
     public enum SpecialType
     {
-        STMTLST = ExpressionType.STMTLST,
-        PROCEDURE = ExpressionType.PROCEDURE,
+        STMTLST = ExpressionType.STMTLST
+    }
+
+    public enum WithNameType
+    {
+        PROCEDURE = ExpressionType.PROCEDURE
     }
 
     public enum StatementType
@@ -57,9 +61,23 @@
             Line = line;
         }
 
-        public ExpressionModel(SpecialType type)
+        public ExpressionModel(WithNameType type, string name)
         {
             Type = (ExpressionType)type;
+            Name = name;
+        }
+
+        public ExpressionModel(SpecialType type, int line = 0)
+        {
+            Type = (ExpressionType)type;
+            Line = line;
+        }
+
+        public ExpressionModel(StatementType type, string name, int line)
+        {
+            Type = (ExpressionType)type;
+            Name = name;
+            Line = line;
         }
 
         public ExpressionModel(OperationsType type, int line)
