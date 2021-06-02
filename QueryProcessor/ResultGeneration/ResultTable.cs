@@ -106,6 +106,11 @@ namespace QueryProcessor.ResultGeneration
 
         public void SetFalseBoolResult() => _boolResult = false;
 
+        public bool GetBooleanResult()
+        {
+            return _boolResult && _resultTableRows.Any();
+        }
+
         private bool ExistsResult(string firstSynonimName, string firstSynonimValue, string secondSynonimName = "", string secondSynonimValue = "")
         {
             foreach (var resultTableRow in _resultTableRows)
