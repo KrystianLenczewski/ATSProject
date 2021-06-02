@@ -40,8 +40,8 @@ namespace PKB
         public static IEnumerable<Statement> GetParents(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL)
         {
             var parent = pkb.ParentList
-                .Where(x => WhereConditionIsTrue(line, x.Child.Line, type, x.Parent.Type))
-                .Select(x => CreateStatamentOfType(x.Parent.Type, x.Parent.Line)).ToList();
+                .Where(x => WhereConditionIsTrue(line, x.Child.Line, type, x.Parent.Type) && x.Parent.Line > 0)
+                .Select(x => CreateStatamentOfType(x.Parent.Type, x.Parent.Line));
             return parent;
         }
 
@@ -50,7 +50,7 @@ namespace PKB
             var parents = pkb.GetParents(line, type);
             foreach (var parent in parents)
             {
-                parents = parents.Concat(pkb.GetParents_(parent.ProgramLine, type)).ToList();
+                parents = parents.Concat(pkb.GetParents_(parent.ProgramLine, type));
             }
             return parents;
         }
@@ -59,7 +59,7 @@ namespace PKB
         {
             var follows = pkb.FollowsList
                 .Where(x => WhereConditionIsTrue(line, x.Key.Line, type, x.Key.Type))
-                .Select(x => CreateStatamentOfType(x.Value.Type, x.Value.Line)).ToList();
+                .Select(x => CreateStatamentOfType(x.Value.Type, x.Value.Line));
             return follows;
         }
 
@@ -67,7 +67,7 @@ namespace PKB
         {
             var follows = pkb.FollowsList
                 .Where(x => WhereConditionIsTrue(line, x.Value.Line, type, x.Value.Type))
-                .Select(x => CreateStatamentOfType(x.Key.Type, x.Key.Line)).ToList();
+                .Select(x => CreateStatamentOfType(x.Key.Type, x.Key.Line));
             return follows;
         }
 
@@ -76,7 +76,7 @@ namespace PKB
             var follows = pkb.GetFollows(line, type);
             foreach (var follow in follows)
             {
-                follows = follows.Concat(pkb.GetFollows_(follow.ProgramLine, type)).ToList();
+                follows = follows.Concat(pkb.GetFollows_(follow.ProgramLine, type));
             }
             return follows;
         }
@@ -86,7 +86,7 @@ namespace PKB
             var followed = pkb.GetFollowed(line, type);
             foreach (var item in followed)
             {
-                followed = followed.Concat(pkb.GetFollowed_(item.ProgramLine, type)).ToList();
+                followed = followed.Concat(pkb.GetFollowed_(item.ProgramLine, type));
             }
             return followed;
         }
@@ -95,7 +95,7 @@ namespace PKB
         {
             var modifies = pkb.ModifiesList
                 .Where(x => WhereConditionIsTrue(line, x.Key.Line, type, x.Key.Type))
-                .Select(x => x.Value.Name).ToList();
+                .Select(x => x.Value.Name);
             return modifies;
         }
 
@@ -103,42 +103,42 @@ namespace PKB
         {
             var modifies = pkb.ModifiesList
                 .Where(x => x.Key.Name == procName && (type == ExpressionType.NULL || type == x.Value.Type))
-                .Select(x => x.Value.Name).ToList().Distinct();
+                .Select(x => x.Value.Name);
             return modifies;
         }
 
-        public static List<Statement> GetModified(this IPKBStore pkb, int line, ExpressionType type = ExpressionType.NULL)
+        public static IEnumerable<Statement> GetModified(this IPKBStore pkb, int line, ExpressionType type = ExpressionType.NULL)
         {
             var modified = pkb.ModifiesList
                 .Where(x => WhereConditionIsTrue(line, x.Value.Line, type, x.Value.Type))
-                .Select(x => CreateStatamentOfType(x.Key.Type, x.Key.Line)).ToList();
+                .Select(x => CreateStatamentOfType(x.Key.Type, x.Key.Line));
             return modified;
         }
 
-        public static List<Statement> GetModified(this IPKBStore pkb, string varName, ExpressionType type = ExpressionType.NULL)
+        public static IEnumerable<Statement> GetModified(this IPKBStore pkb, string varName, ExpressionType type = ExpressionType.NULL)
         {
             var modified = pkb.ModifiesList
                 .Where(x => x.Value.Name == varName && (type == ExpressionType.NULL || type == x.Key.Type))
-                .Select(x => CreateStatamentOfType(x.Key.Type, x.Key.Line)).ToList();
+                .Select(x => CreateStatamentOfType(x.Key.Type, x.Key.Line));
             return modified;
         }
 
-        public static List<Variable> GetAllVariables(this IPKBStore pkb)
+        public static IEnumerable<Variable> GetAllVariables(this IPKBStore pkb)
         {
             throw new NotImplementedException();
         }
 
-        public static List<Statement> GetAllStatements(this IPKBStore pkb)
+        public static IEnumerable<Statement> GetAllStatements(this IPKBStore pkb)
         {
             throw new NotImplementedException();
         }
 
-        public static List<Procedure> GetAllProcedures(this IPKBStore pkb)
+        public static IEnumerable<Procedure> GetAllProcedures(this IPKBStore pkb)
         {
             throw new NotImplementedException();
         }
 
-        public static List<int> GetAllConstants(this IPKBStore pkb)
+        public static IEnumerable<int> GetAllConstants(this IPKBStore pkb)
         {
             throw new NotImplementedException();
         }
