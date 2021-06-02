@@ -96,14 +96,33 @@ namespace TestPKB
             Assert.Equal(results.ToList(), result.Select(x => x.ProgramLine).OrderBy(x => x).ToList());
         }
 
-        /*[Theory]
+        [Theory]
         [InlineData(new string[] { "a", "c" }, "Rectangle")]
-        public void GetModifies_Test(string[] results, string procName, ExpressionType type = ExpressionType.NULL)
+        public void GetModifiesByProcnameTest(string[] results, string procName, ExpressionType type = ExpressionType.NULL)
         {
             var pkb = PreparePKB();
             var result = pkb.GetModifies(procName);
-            Assert.Equal(results.ToList(), result.Select(x => pkb.ParentList.Where(y => y.)).OrderBy(x => x).ToList());
-        }*/
+            Assert.Equal(results.ToList(), result.OrderBy(x => x).ToList());
+        }
+
+        [Theory]
+        [InlineData(new string[] { "a", "d" }, 24)]
+        public void GetModifiesByParentLineTest(string[] results, int line, ExpressionType type = ExpressionType.NULL)
+        {
+            var pkb = PreparePKB();
+            var result = pkb.GetModifies(line, type);
+            Assert.Equal(results.ToList(), result.OrderBy(x => x).ToList());
+        }
+
+        [Theory]
+        [InlineData(new int[] { 10, 18, 23, 24 }, "d")]
+        [InlineData(new int[] { 10, 18, 23 }, "d", ExpressionType.WHILE)]
+        public void GetModifiedTest(int[] results, string varName, ExpressionType type = ExpressionType.NULL)
+        {
+            var pkb = PreparePKB();
+            var result = pkb.GetModified(varName, type);
+            Assert.Equal(results.ToList(), result.Select(x => x.ProgramLine).OrderBy(x => x).ToList());
+        }
 
         private IPKBStore PreparePKB()
         {
@@ -133,17 +152,14 @@ namespace TestPKB
             pkb.FollowsList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, 11), new ExpressionModel(StatementType.ASSIGN, 12)));
 
             // modifies/modified
-            /*var tringleProcedure = new ParentModel(new ExpressionModel(SpecialType.PROCEDURE), new ExpressionModel(FactorType.VAR, "Rectangle"), 0);
-            var assignA = new ParentModel(new ExpressionModel(StatementType.ASSIGN, 2), new ExpressionModel(FactorType.VAR, "a"), 0);
-            var assignC = new ParentModel(new ExpressionModel(StatementType.ASSIGN, 12), new ExpressionModel(FactorType.VAR, "c"), 0);
-            var assignC2 = new ParentModel(new ExpressionModel(StatementType.ASSIGN, 16), new ExpressionModel(FactorType.VAR, "c"), 0);
-            pkb.ParentList.Add(tringleProcedure);
-            pkb.ParentList.Add(assignA);
-            pkb.ParentList.Add(assignC);
-            pkb.ParentList.Add(assignC2);
-            pkb.ModifiesList.Add(KeyValuePair.Create(tringleProcedure.Parent, assignA.Parent));
-            pkb.ModifiesList.Add(KeyValuePair.Create(tringleProcedure.Parent, assignC.Parent));
-            pkb.ModifiesList.Add(KeyValuePair.Create(tringleProcedure.Parent, assignC2.Parent));*/
+            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(WithNameType.PROCEDURE, "Rectangle"), new ExpressionModel(StatementType.ASSIGN, "a", 2)));
+            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(WithNameType.PROCEDURE, "Rectangle"), new ExpressionModel(StatementType.ASSIGN, "c", 12)));
+            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(WithNameType.PROCEDURE, "Rectangle"), new ExpressionModel(StatementType.ASSIGN, "c", 16)));
+            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.IF, 24), new ExpressionModel(StatementType.ASSIGN, "d", 25)));
+            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.IF, 24), new ExpressionModel(StatementType.ASSIGN, "a", 26)));
+            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.WHILE, 10), new ExpressionModel(StatementType.ASSIGN, "d", 11)));
+            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.WHILE, 18), new ExpressionModel(StatementType.ASSIGN, "d", 22)));
+            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.WHILE, 23), new ExpressionModel(StatementType.ASSIGN, "d", 25)));
             return pkb;
         }
     }
