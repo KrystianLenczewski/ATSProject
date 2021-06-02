@@ -8,7 +8,10 @@
         STMTLST,
         PROCEDURE,
         VAR,
-        CONST
+        CONST,
+        IF,
+        CALL,
+        NULL
     }
 
     public enum OperationsType
@@ -18,14 +21,20 @@
 
     public enum SpecialType
     {
-        STMTLST = ExpressionType.STMTLST,
-        PROCEDURE = ExpressionType.PROCEDURE,
+        STMTLST = ExpressionType.STMTLST
+    }
+
+    public enum WithNameType
+    {
+        PROCEDURE = ExpressionType.PROCEDURE
     }
 
     public enum StatementType
     {
         ASSIGN = ExpressionType.ASSIGN,
         WHILE = ExpressionType.WHILE,
+        IF = ExpressionType.IF,
+        CALL = ExpressionType.CALL
     }
 
     public enum FactorType
@@ -40,11 +49,10 @@
         public string Name { get; private set; }
         public int Line { get; set; }
 
-        public ExpressionModel(FactorType type, string name, int line)
+        public ExpressionModel(FactorType type, string name)
         {
             Type = (ExpressionType)type;
             Name = name;
-            Line = line;
         }
 
         public ExpressionModel(StatementType type, int line)
@@ -53,9 +61,22 @@
             Line = line;
         }
 
-        public ExpressionModel(SpecialType type, int line)
+        public ExpressionModel(WithNameType type, string name)
         {
             Type = (ExpressionType)type;
+            Name = name;
+        }
+
+        public ExpressionModel(SpecialType type, int line = 0)
+        {
+            Type = (ExpressionType)type;
+            Line = line;
+        }
+
+        public ExpressionModel(StatementType type, string name, int line)
+        {
+            Type = (ExpressionType)type;
+            Name = name;
             Line = line;
         }
 
@@ -63,6 +84,19 @@
         {
             Type = (ExpressionType)type;
             Line = line;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if ((obj == null) || !this.GetType().Equals(obj.GetType()))
+            {
+                return false;
+            }
+            else
+            {
+                ExpressionModel p = (ExpressionModel)obj;
+                return (Type == p.Type) && (Line == p.Line);
+            }
         }
     }
 }

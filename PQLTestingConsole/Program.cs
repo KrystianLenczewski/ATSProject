@@ -14,7 +14,7 @@ namespace PQLTestingConsole
             //select p with p.procName=\"Second\" such that Calls(p,q) such that Modifies() with 
             QueryTree queryTree = queryPreprocessor.ParseQuery(query);
             QueryEvaluator queryEvaluator = new QueryEvaluator();
-            string queryResultsRaw = queryEvaluator.GetQueryResultsRaw(queryTree);
+            // List<object> queryResultsRaw = queryEvaluator.GetQueryResultsRaw(queryTree);
         }
     }
 }
