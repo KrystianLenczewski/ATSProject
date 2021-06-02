@@ -40,7 +40,7 @@ namespace PKB
         public static IEnumerable<Statement> GetParents(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL)
         {
             var parent = pkb.ParentList
-                .Where(x => WhereConditionIsTrue(line, x.Child.Line, type, x.Parent.Type))
+                .Where(x => WhereConditionIsTrue(line, x.Child.Line, type, x.Parent.Type) && x.Parent.Line > 0)
                 .Select(x => CreateStatamentOfType(x.Parent.Type, x.Parent.Line));
             return parent;
         }

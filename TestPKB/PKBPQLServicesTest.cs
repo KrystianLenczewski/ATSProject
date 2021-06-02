@@ -97,7 +97,7 @@ namespace TestPKB
         }
 
         [Theory]
-        [InlineData(new string[] { "a", "c" }, "Rectangle")]
+        [InlineData(new string[] { "a", "c", "c" }, "Rectangle")]
         public void GetModifiesByProcnameTest(string[] results, string procName, ExpressionType type = ExpressionType.NULL)
         {
             var pkb = PreparePKB();
