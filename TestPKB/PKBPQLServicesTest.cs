@@ -129,16 +129,24 @@ namespace TestPKB
         [InlineData(new string[] { "a", "b", "c", "d", "k", "t" }, 18)]
         [InlineData(new string[] { "a", "b", "d", "k", "t" }, 23)]
         [InlineData(new string[] { "a", "b", "c", "d", "k", "t" }, 0, ExpressionType.ASSIGN)]
-        public void GetUsed(string[] results, int line, ExpressionType type = ExpressionType.NULL)
+        public void GetUsedByLineTest(string[] results, int line, ExpressionType type = ExpressionType.NULL)
         {
             var pkb = PreparePKB();
             var result = pkb.GetUsed(line, type);
             Assert.Equal(results.ToList(), result.OrderBy(x => x).Distinct().ToList());
         }
 
+        [InlineData(new int[] { 2, 3 }, "Rectangle")]
+        public void GetUsedByProcedureTest(string[] results, string name, ExpressionType type = ExpressionType.NULL)
+        {
+            var pkb = PreparePKB();
+            var result = pkb.GetUsed(name, type);
+            Assert.Equal(results.ToList(), result.OrderBy(x => x).Distinct().ToList());
+        }
+
         [Theory]
         [InlineData(new int[] { 4, 8, 9, 10, 11, 12, 13, 14, 17, 18, 19, 20, 23, 24, 26, 27 }, "d")]
-        public void GetUses(int[] results, string varName, ExpressionType type = ExpressionType.NULL)
+        public void GetUsesTest(int[] results, string varName, ExpressionType type = ExpressionType.NULL)
         {
             var pkb = PreparePKB();
             var result = pkb.GetUses(varName, type);
@@ -231,6 +239,9 @@ namespace TestPKB
             pkb.UsesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.IF, 24), new ExpressionModel(FactorType.VAR, "d")));
             pkb.UsesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, 26), new ExpressionModel(FactorType.VAR, "d")));
             pkb.UsesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, 27), new ExpressionModel(FactorType.VAR, "d")));
+
+            pkb.UsesList.Add(KeyValuePair.Create(new ExpressionModel(WithNameType.PROCEDURE, "Rectangle"), new ExpressionModel(StatementType.ASSIGN, "a", 2)));
+            pkb.UsesList.Add(KeyValuePair.Create(new ExpressionModel(WithNameType.PROCEDURE, "Rectangle"), new ExpressionModel(StatementType.ASSIGN, "d", 3)));
             return pkb;
         }
     }

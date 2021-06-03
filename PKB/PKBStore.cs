@@ -8,6 +8,8 @@ namespace PKB
         public List<KeyValuePair<ExpressionModel, ExpressionModel>> ModifiesList { get; set; } = new List<KeyValuePair<ExpressionModel, ExpressionModel>>();
         public List<KeyValuePair<ExpressionModel, ExpressionModel>> FollowsList { get; set; } = new List<KeyValuePair<ExpressionModel, ExpressionModel>>();
         public List<KeyValuePair<ExpressionModel, ExpressionModel>> UsesList { get; set; } = new List<KeyValuePair<ExpressionModel, ExpressionModel>>();
+        public List<KeyValuePair<ExpressionModel, ExpressionModel>> NextList { get; set; } = new List<KeyValuePair<ExpressionModel, ExpressionModel>>();
+        public List<KeyValuePair<ExpressionModel, ExpressionModel>> AffectsList { get; set; } = new List<KeyValuePair<ExpressionModel, ExpressionModel>>();
         public List<ParentModel> ParentList { get; set; } = new List<ParentModel>();
 
         public override string ToString()
