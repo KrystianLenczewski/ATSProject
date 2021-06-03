@@ -131,10 +131,18 @@ namespace PKB
             return used;
         }
 
-        public static IEnumerable<Statement> GetUses(this IPKBStore pkb, string varName, ExpressionType type = ExpressionType.NULL)
+        public static IEnumerable<string> GetUsed(this IPKBStore pkb, string name, ExpressionType type = ExpressionType.NULL)
+        {
+            var used = pkb.UsesList
+                .Where(x => x.Key.Name == name && (type == x.Value.Type || type == ExpressionType.NULL))
+                .Select(x => x.Value.Name);
+            return used;
+        }
+
+        public static IEnumerable<Statement> GetUses(this IPKBStore pkb, string name, ExpressionType type = ExpressionType.NULL)
         {
             var uses = pkb.UsesList
-                .Where(x => x.Value.Name == varName && (type == ExpressionType.NULL || type == x.Key.Type))
+                .Where(x => x.Value.Name == name && (type == ExpressionType.NULL || type == x.Key.Type) && x.Key.Line > 0)
                 .Select(x => CreateStatamentOfType(x.Key.Type, x.Key.Line));
             return uses;
         }
