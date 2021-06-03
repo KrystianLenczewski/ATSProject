@@ -97,7 +97,7 @@ namespace TestPKB
         }
 
         [Theory]
-        [InlineData(new string[] { "a", "c" }, "Rectangle")]
+        [InlineData(new string[] { "a", "c", "c" }, "Rectangle")]
         public void GetModifiesByProcnameTest(string[] results, string procName, ExpressionType type = ExpressionType.NULL)
         {
             var pkb = PreparePKB();
@@ -129,6 +129,18 @@ namespace TestPKB
             var pkb = new PKBStore();
 
             // parents/children
+            var procedure = new ExpressionModel(WithNameType.PROCEDURE, "Circle");
+
+            pkb.ParentList.Add(new ParentModel(procedure, new ExpressionModel(StatementType.ASSIGN, 1), 1));
+            pkb.ParentList.Add(new ParentModel(procedure, new ExpressionModel(StatementType.ASSIGN, 2), 2));
+            pkb.ParentList.Add(new ParentModel(procedure, new ExpressionModel(StatementType.ASSIGN, 3), 3));
+            pkb.ParentList.Add(new ParentModel(procedure, new ExpressionModel(StatementType.CALL, 4), 4));
+            pkb.ParentList.Add(new ParentModel(procedure, new ExpressionModel(StatementType.ASSIGN, 5), 5));
+            pkb.ParentList.Add(new ParentModel(procedure, new ExpressionModel(StatementType.CALL, 6), 6));
+            pkb.ParentList.Add(new ParentModel(procedure, new ExpressionModel(StatementType.ASSIGN, 7), 7));
+            pkb.ParentList.Add(new ParentModel(procedure, new ExpressionModel(StatementType.IF, 8), 8));
+            pkb.ParentList.Add(new ParentModel(procedure, new ExpressionModel(StatementType.ASSIGN, 17), 10));
+
             pkb.ParentList.Add(new ParentModel(new ExpressionModel(StatementType.IF, 8), new ExpressionModel(StatementType.WHILE, 10), 1));
             pkb.ParentList.Add(new ParentModel(new ExpressionModel(StatementType.IF, 8), new ExpressionModel(StatementType.WHILE, 13), 1));
             pkb.ParentList.Add(new ParentModel(new ExpressionModel(StatementType.IF, 8), new ExpressionModel(StatementType.WHILE, 14), 1));
