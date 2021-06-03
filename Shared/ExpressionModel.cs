@@ -98,5 +98,10 @@
                 return (Type == p.Type) && (Line == p.Line);
             }
         }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 }
