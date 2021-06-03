@@ -1,5 +1,6 @@
 ﻿using QueryProcessor;
 using QueryProcessor.QueryProcessing;
+using QueryProcessor.ResultGeneration;
 using System.Collections.Generic;
 
 namespace PQLTestingConsole
@@ -9,11 +10,10 @@ namespace PQLTestingConsole
         static void Main(string[] args)
         {
             var queryPreprocessor = new QueryPreprocessor();
-          
-            string query = "select BOOLEAN such that Next* (20,620)";
+            string query = "variable v; stmt s,s2,s3; if ifstat; assign a; while w; select s such that Parent* (s,10)";
             QueryTree queryTree = queryPreprocessor.ParseQuery(query);
             QueryEvaluator queryEvaluator = new QueryEvaluator();
-            // List<object> queryResultsRaw = queryEvaluator.GetQueryResultsRaw(queryTree);
+            var result = queryEvaluator.GetQueryResultsRaw(queryTree);
         }
     }
 }

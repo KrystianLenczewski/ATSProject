@@ -20,7 +20,7 @@ namespace QueryProcessor.QueryProcessing
             if (_queryValidator.ValidateQuery(query, out List<string> validationErrors))
             {
                 _symbolTable = new SymbolTable(query);
-                QueryTree queryTree = new QueryTree();
+                QueryTree queryTree = new QueryTree(_symbolTable.QuerySymbols);
                 queryTree.AddResultNode(ExtractResult(query));
                 queryTree.AddSuchThatNode(ExtractSuchThatElements(query));
                 queryTree.AddWithNode(ExtractWith(query));
