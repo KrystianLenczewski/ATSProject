@@ -31,7 +31,7 @@ namespace QueryProcessor.ResultGeneration
                     }
                     else
                     {
-                        resultRow += $"{synonimName}:[{string.Join(',', candidates[synonimName])}] ";
+                        resultRow += $"{synonimName}:[{string.Join(',', candidates[synonimName].Distinct())}] ";
                     }
                 }
                 result.Add(resultRow);

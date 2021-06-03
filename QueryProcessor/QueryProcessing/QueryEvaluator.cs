@@ -292,7 +292,7 @@ namespace QueryProcessor.QueryProcessing
             }
             else if (_candidates.ContainsKey(arg1.Name))
             {
-                List<string> result = _pkbStore.GetModified(int.Parse(arg2.Value)).Select(s => s.ProgramLine.ToString()).ToList();
+                List<string> result = _pkbStore.GetModified(arg2.Value).Select(s => s.ProgramLine.ToString()).ToList();
                 foreach (string arg1Line in result)
                     _resultTable.AddRelationResult(arg1.Name, arg1Line);
 
@@ -301,7 +301,7 @@ namespace QueryProcessor.QueryProcessing
             }
             else if (_candidates.ContainsKey(arg2.Name))
             {
-                List<string> result = _pkbStore.GetModifies(int.Parse(arg1.Value)).ToList();
+                List<string> result = _pkbStore.GetModifies(arg1.Value).ToList();
                 foreach (string arg2Line in result)
                     _resultTable.AddRelationResult(arg2.Name, arg2Line);
 
