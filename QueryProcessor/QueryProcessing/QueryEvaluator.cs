@@ -27,13 +27,13 @@ namespace QueryProcessor.QueryProcessing
 
         public List<string> GetQueryResultsRaw(QueryTree queryTree)
         {
-            queryTree.PrepareTreeForQueryEvaluator();
             PrepareCandidatesDictionary(queryTree.GetDeclarations() ?? new Dictionary<string, RelationArgumentType>());
             _resultTable = new ResultTable(queryTree.GetDeclarations().Keys.ToList() ?? new List<string>());
 
             List<RelationNode> relations = queryTree.GetRelationNodes();
             HandleRelations(relations);
             List<string> resultSynonimNames = queryTree.GetResultNodeChildrens().Select(s=>s.Name).ToList();
+            ApplyWithRestrictions(queryTree.GetAttributeNodes());
 
             if (resultSynonimNames.FirstOrDefault()?.ToLower() == "boolean".ToLower())
                 return new List<string> { _resultTable.GetBooleanResult().ToString() };
@@ -54,6 +54,8 @@ namespace QueryProcessor.QueryProcessing
                     HandleParentStar(relationNode);
                 else if (relationNode.RelationType == RelationType.MODIFIES)
                     HandleModifies(relationNode);
+                else if (relationNode.RelationType == RelationType.USES)
+                    HandleUses(relationNode);
             }
         }
 
@@ -292,7 +294,7 @@ namespace QueryProcessor.QueryProcessing
             }
             else if (_candidates.ContainsKey(arg1.Name))
             {
-                List<string> result = _pkbStore.GetModified(int.Parse(arg2.Value)).Select(s => s.ProgramLine.ToString()).ToList();
+                List<string> result = _pkbStore.GetModified(arg2.Value).Select(s => s.ProgramLine.ToString()).ToList();
                 foreach (string arg1Line in result)
                     _resultTable.AddRelationResult(arg1.Name, arg1Line);
 
@@ -301,7 +303,7 @@ namespace QueryProcessor.QueryProcessing
             }
             else if (_candidates.ContainsKey(arg2.Name))
             {
-                List<string> result = _pkbStore.GetModifies(int.Parse(arg1.Value)).ToList();
+                List<string> result = _pkbStore.GetModifies(arg1.Value).ToList();
                 foreach (string arg2Line in result)
                     _resultTable.AddRelationResult(arg2.Name, arg2Line);
 
@@ -316,7 +318,67 @@ namespace QueryProcessor.QueryProcessing
             }
         }
 
+        private void HandleUses(RelationNode relationUsesNode)
+        {
+            ArgumentNode arg1 = relationUsesNode.Arguments[0];
+            ArgumentNode arg2 = relationUsesNode.Arguments[1];
+            if (_candidates.ContainsKey(arg1.Name) && _candidates.ContainsKey(arg2.Name))
+            {
+                List<string> arg1CandidatesToRemove = new List<string>();
+                List<string> arg2Candidates = new List<string>();
+                foreach (var line in _candidates[arg1.Name])
+                {
+                    var result = _pkbStore.GetUsed(int.Parse(line));
+                    if (result.Any())
+                    {
+                        foreach (var arg2Line in result)
+                            _resultTable.AddRelationResult(arg1.Name, line, arg2.Name, arg2Line);
+                        arg2Candidates.AddRange(result);
+                        arg2Candidates = arg2Candidates.Distinct().ToList();
+                    }
+                    else
+                        arg1CandidatesToRemove.Add(line);
+                }
 
+                List<string> arg2CandidatesToRemove = _candidates[arg2.Name].Where(w => !arg2Candidates.Contains(w)).ToList();
+                RemoveCandidates(arg1.Name, arg1CandidatesToRemove);
+                RemoveCandidates(arg2.Name, arg2CandidatesToRemove);
+            }
+            else if (_candidates.ContainsKey(arg1.Name))
+            {
+                List<string> result = _pkbStore.GetUses(arg2.Value).Select(s => s.ProgramLine.ToString()).ToList();
+                foreach (string arg1Line in result)
+                    _resultTable.AddRelationResult(arg1.Name, arg1Line);
+
+                List<string> arg1CandidatesToRemove = _candidates[arg1.Name].Where(w => !result.Contains(w)).ToList();
+                RemoveCandidates(arg1.Name, arg1CandidatesToRemove);
+            }
+            else if (_candidates.ContainsKey(arg2.Name))
+            {
+                List<string> result;
+                if (arg1.RelationArgumentType == RelationArgumentType.Integer)
+                    result = _pkbStore.GetUsed(int.Parse(arg1.Value)).ToList();
+                else
+                    result = _pkbStore.GetUsed(arg1.Value).ToList();
+
+                foreach (string arg2Line in result)
+                    _resultTable.AddRelationResult(arg2.Name, arg2Line);
+
+                List<string> arg2CandidatesToRemove = _candidates[arg2.Name].Where(w => !result.Contains(w)).ToList();
+                RemoveCandidates(arg2.Name, arg2CandidatesToRemove);
+            }
+            else
+            {
+                List<string> result;
+                if (arg1.RelationArgumentType == RelationArgumentType.Integer)
+                    result = _pkbStore.GetUsed(int.Parse(arg1.Value)).ToList();
+                else
+                    result = _pkbStore.GetUsed(arg1.Value).ToList();
+
+                if (!result.Contains(arg2.Value))
+                    _resultTable.SetFalseBoolResult();
+            }
+        }
 
         private void RemoveCandidates(string synonimName, List<string> candidatesToRemove)
         {
@@ -368,5 +430,25 @@ namespace QueryProcessor.QueryProcessing
             };
         }
 
+        private void ApplyWithRestrictions(List<AttributeNode> attributeNodes)
+        {
+            foreach(AttributeNode attributeNode in attributeNodes)
+            {
+                if(attributeNode.AttributeValue is string attributeStringValue)
+                {
+                    List<string> candidatesToRemove = _candidates[attributeNode.SynonimNode.Name].Where(w => w != attributeStringValue).ToList();
+                    RemoveCandidates(attributeNode.SynonimNode.Name, candidatesToRemove);
+                }
+                else if(attributeNode.AttributeValue is AttributeNode relatedAttributeNode)
+                {
+                    List<string> intersection = _candidates[attributeNode.SynonimNode.Name].Intersect(_candidates[relatedAttributeNode.SynonimNode.Name]).ToList();
+                    List<string> firstAttributeCandidatesToRemove = _candidates[attributeNode.SynonimNode.Name].Where(w => !intersection.Contains(w)).ToList();
+                    List<string> secondtAttributeCandidatesToRemove = _candidates[relatedAttributeNode.SynonimNode.Name].Where(w => !intersection.Contains(w)).ToList();
+
+                    RemoveCandidates(attributeNode.SynonimNode.Name, firstAttributeCandidatesToRemove);
+                    RemoveCandidates(relatedAttributeNode.SynonimNode.Name, secondtAttributeCandidatesToRemove);
+                }
+            }
+        }
     }
 }

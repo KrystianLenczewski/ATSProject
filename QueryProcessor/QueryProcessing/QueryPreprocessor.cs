@@ -56,6 +56,7 @@ namespace QueryProcessor.QueryProcessing
                     RelationType relationType = _relTable.GetRelationType(splitedQuery[i]);
                     RelationNode relationNode = new RelationNode() { RelationType = relationType };
                     relationSectionNode.Childrens.Add(relationNode);
+                    
                     List<string> relationArguments = splitedQuery[i + 1].Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
                     AddArgumentsToRelationNode(relationNode, relationArguments);
                 }
@@ -72,6 +73,8 @@ namespace QueryProcessor.QueryProcessing
             {
                 string relationArgumentName = relationArgument.Replace("(", "").Replace(")", "");
                 RelationArgumentType relationArgumentType = _symbolTable.GetRelationArgumentType(relationArgumentName);
+                if (relationArgumentType == RelationArgumentType.String)
+                    relationArgumentName = relationArgumentName.Replace("\"", "");
                 ArgumentNode argumentNode = new ArgumentNode(relationArgumentType, relationArgumentName);
                 relationNode.Arguments.Add(argumentNode);
             }
