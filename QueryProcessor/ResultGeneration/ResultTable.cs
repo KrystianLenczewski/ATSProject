@@ -11,6 +11,7 @@ namespace QueryProcessor.ResultGeneration
         private readonly List<string> _declaredSynonims;
         private List<ResultTableRow> _resultTableRows = new List<ResultTableRow>();
         private bool _boolResult = true;
+        private bool _addedRelationResult = false;
 
         public ResultTable(List<string> declaredSynonims)
         {
@@ -20,6 +21,8 @@ namespace QueryProcessor.ResultGeneration
         public List<string> GetResult(Dictionary<string, List<string>> candidates, params string[] synonimNames)
         {
             List<string> result = new List<string>();
+            if (_resultTableRows.Count == 0 && !_addedRelationResult)
+                _resultTableRows.Add(new ResultTableRow(_declaredSynonims));
             foreach(ResultTableRow resultTableRow in _resultTableRows)
             {
                 string resultRow = "";
@@ -62,6 +65,7 @@ namespace QueryProcessor.ResultGeneration
 
         public void AddRelationResult(string firstArgumentName, string firstArgumentValue, string secondArgumentName = "", string secondArgumentValue = "")
         {
+            _addedRelationResult = true;
             if(!ExistsResult(firstArgumentName, firstArgumentValue, secondArgumentName, secondArgumentValue))
             {
                 if (string.IsNullOrEmpty(secondArgumentName))

@@ -95,38 +95,6 @@ namespace QueryProcessor.QueryProcessing
             return attributeNodes.Where(w => w.AttributeValue is AttributeNode).ToList();
         }
 
-        public void PrepareTreeForQueryEvaluator()
-        {
-            MoveWithInfoToRelationArguments();
-        }
-
-        private void MoveWithInfoToRelationArguments()
-        {
-            SectionNode withNode = GetSectionNode(NodeType.WITH);
-            if (withNode != null)
-            {
-                List<AttributeNode> attributeNodes = withNode?.Childrens?.Select(s => s as AttributeNode)?.Where(w => w != null)?.ToList();
-                foreach (AttributeNode attributeNode in attributeNodes)
-                    AddInfoFromWithToRelationsArguments(attributeNode);
-            }
-        }
-
-        private void AddInfoFromWithToRelationsArguments(AttributeNode attributeNode)
-        {
-            if (!(attributeNode.AttributeValue is AttributeNode))
-            {
-                string attributeSynonimName = attributeNode.SynonimNode.Name;
-                foreach (RelationNode relationNode in GetRelationNodes())
-                {
-                    foreach (ArgumentNode relationArgument in relationNode.Arguments)
-                    {
-                        if (relationArgument.Name == attributeSynonimName)
-                            relationArgument.Value = attributeNode.AttributeValue?.ToString();
-                    }
-                }
-            }
-        }
-
         private SectionNode GetSectionNode(NodeType nodeType) => _rootNode.Childrens.FirstOrDefault(f => f.NodeType == nodeType) as SectionNode;
 
     }

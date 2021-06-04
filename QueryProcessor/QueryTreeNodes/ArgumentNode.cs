@@ -18,7 +18,10 @@ namespace QueryProcessor.QueryTreeNodes
             Name = name;
 
             if (relationArgumentType == RelationArgumentType.Integer || relationArgumentType == RelationArgumentType.String)
+            {
                 Value = name;
+                Name = string.Empty;
+            }
         }
 
         public bool IsStatement()

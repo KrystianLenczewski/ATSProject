@@ -10,7 +10,7 @@ namespace PQLTestingConsole
         static void Main(string[] args)
         {
             var queryPreprocessor = new QueryPreprocessor();
-            string query = "variable v; stmt s,s2,s3; if ifstat; assign a; while w; select v,s such that Modifies (\"Rectangle\",v) and Follows* (s,6)";
+            string query = "variable v; stmt s,s2,s3; if ifstat; assign a; while w; select BOOLEAN such that Parent (s,s2) with s.stmt#=8 and s2.stmt#=11";
             QueryTree queryTree = queryPreprocessor.ParseQuery(query);
             QueryEvaluator queryEvaluator = new QueryEvaluator();
             var result = queryEvaluator.GetQueryResultsRaw(queryTree);
