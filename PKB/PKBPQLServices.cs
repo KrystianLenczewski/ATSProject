@@ -123,24 +123,28 @@ namespace PKB
             return modified;
         }
 
-        public static IEnumerable<Variable> GetAllVariables(this IPKBStore pkb)
+        public static IEnumerable<string> GetUsed(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL)
         {
-            throw new NotImplementedException();
+            var used = pkb.UsesList
+                .Where(x => WhereConditionIsTrue(line, x.Key.Line, type, x.Key.Type))
+                .Select(x => x.Value.Name);
+            return used;
         }
 
-        public static IEnumerable<Statement> GetAllStatements(this IPKBStore pkb)
+        public static IEnumerable<string> GetUsed(this IPKBStore pkb, string name, ExpressionType type = ExpressionType.NULL)
         {
-            throw new NotImplementedException();
+            var used = pkb.UsesList
+                .Where(x => x.Key.Name == name && (type == x.Value.Type || type == ExpressionType.NULL))
+                .Select(x => x.Value.Name);
+            return used;
         }
 
-        public static IEnumerable<Procedure> GetAllProcedures(this IPKBStore pkb)
+        public static IEnumerable<Statement> GetUses(this IPKBStore pkb, string name, ExpressionType type = ExpressionType.NULL)
         {
-            throw new NotImplementedException();
-        }
-
-        public static IEnumerable<int> GetAllConstants(this IPKBStore pkb)
-        {
-            throw new NotImplementedException();
+            var uses = pkb.UsesList
+                .Where(x => x.Value.Name == name && (type == ExpressionType.NULL || type == x.Key.Type) && x.Key.Line > 0)
+                .Select(x => CreateStatamentOfType(x.Key.Type, x.Key.Line));
+            return uses;
         }
 
         private static Statement CreateStatamentOfType(ExpressionType type, int programLine) => type switch
