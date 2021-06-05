@@ -154,6 +154,47 @@ namespace TestPKB
             Assert.Equal(results.ToList(), preparedResult);
         }
 
+        [Theory]
+        [InlineData(new int[] { 2 }, 1)]
+        [InlineData(new int[] { 3 }, 2)]
+        public void GetNextTest(int[] results, int line, ExpressionType type = ExpressionType.NULL)
+        {
+            var pkb = PreparePKB();
+            var result = pkb.GetNext(line, type);
+            var preparedResult = result.Select(x => x.ProgramLine).OrderBy(x => x).ToList();
+            Assert.Equal(results.ToList(), preparedResult);
+        }
+
+        [Theory]
+        [InlineData(new int[] { 2, 3 }, 1)]
+        public void GetNext_Test(int[] results, int line, ExpressionType type = ExpressionType.NULL)
+        {
+            var pkb = PreparePKB();
+            var result = pkb.GetNext_(line, type);
+            var preparedResult = result.Select(x => x.ProgramLine).OrderBy(x => x).ToList();
+            Assert.Equal(results.ToList(), preparedResult);
+        }
+
+        [Theory]
+        [InlineData(new int[] { 1 }, 2)]
+        [InlineData(new int[] { 2 }, 3)]
+        public void GetPreviousTest(int[] results, int line, ExpressionType type = ExpressionType.NULL)
+        {
+            var pkb = PreparePKB();
+            var result = pkb.GetPrevious(line, type);
+            var preparedResult = result.Select(x => x.ProgramLine).OrderBy(x => x).ToList();
+            Assert.Equal(results.ToList(), preparedResult);
+        }
+
+        [Theory]
+        [InlineData(new int[] { 1, 2 }, 3)]
+        public void GetPrevious_Test(int[] results, int line, ExpressionType type = ExpressionType.NULL)
+        {
+            var pkb = PreparePKB();
+            var result = pkb.GetPrevious_(line, type);
+            var preparedResult = result.Select(x => x.ProgramLine).OrderBy(x => x).ToList();
+            Assert.Equal(results.ToList(), preparedResult);
+        }
 
         private IPKBStore PreparePKB()
         {
@@ -202,6 +243,7 @@ namespace TestPKB
             pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.WHILE, 18), new ExpressionModel(StatementType.ASSIGN, "d", 22)));
             pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.WHILE, 23), new ExpressionModel(StatementType.ASSIGN, "d", 25)));
 
+            // uses/used
             pkb.UsesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.WHILE, 10), new ExpressionModel(FactorType.VAR, "c")));
             pkb.UsesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.WHILE, 10), new ExpressionModel(FactorType.VAR, "d")));
             pkb.UsesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.WHILE, 10), new ExpressionModel(FactorType.VAR, "t")));
@@ -242,6 +284,11 @@ namespace TestPKB
 
             pkb.UsesList.Add(KeyValuePair.Create(new ExpressionModel(WithNameType.PROCEDURE, "Rectangle"), new ExpressionModel(StatementType.ASSIGN, "a", 2)));
             pkb.UsesList.Add(KeyValuePair.Create(new ExpressionModel(WithNameType.PROCEDURE, "Rectangle"), new ExpressionModel(StatementType.ASSIGN, "d", 3)));
+
+            // next/previous
+            pkb.NextList.Add(KeyValuePair.Create(new ExpressionModel(WithNameType.PROCEDURE, "Rectangle"), new ExpressionModel(StatementType.ASSIGN, "t", 1)));
+            pkb.NextList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, "t", 1), new ExpressionModel(StatementType.ASSIGN, "a", 2)));
+            pkb.NextList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, "a", 2), new ExpressionModel(StatementType.ASSIGN, "d", 3)));
             return pkb;
         }
     }

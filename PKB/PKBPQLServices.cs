@@ -147,6 +147,42 @@ namespace PKB
             return uses;
         }
 
+        public static IEnumerable<Statement> GetNext(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL)
+        {
+            var next = pkb.NextList
+                .Where(x => WhereConditionIsTrue(line, x.Key.Line, type, x.Key.Type))
+                .Select(x => CreateStatamentOfType(x.Value.Type, x.Value.Line));
+            return next;
+        }
+
+        public static IEnumerable<Statement> GetNext_(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL)
+        {
+            var next = pkb.GetNext(line, type);
+            foreach (var item in next)
+            {
+                next = next.Concat(pkb.GetNext_(item.ProgramLine, type));
+            }
+            return next;
+        }
+
+        public static IEnumerable<Statement> GetPrevious(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL)
+        {
+            var previous = pkb.NextList
+                .Where(x => WhereConditionIsTrue(line, x.Value.Line, type, x.Value.Type) && x.Key.Line > 0)
+                .Select(x => CreateStatamentOfType(x.Key.Type, x.Key.Line));
+            return previous;
+        }
+
+        public static IEnumerable<Statement> GetPrevious_(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL)
+        {
+            var previous = pkb.GetPrevious(line, type);
+            foreach (var item in previous)
+            {
+                previous = previous.Concat(pkb.GetPrevious_(item.ProgramLine, type));
+            }
+            return previous;
+        }
+
         private static Statement CreateStatamentOfType(ExpressionType type, int programLine) => type switch
             {
                 ExpressionType.ASSIGN => new Assign { ProgramLine = programLine },
