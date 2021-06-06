@@ -731,7 +731,11 @@ namespace QueryProcessor.QueryProcessing
                     _candidates[declarationsPair.Key] = new List<string>();
 
                     if (expressionType == ExpressionType.VAR)
-                        _candidates[declarationsPair.Key].AddRange(_pkbStore.GetModifies(0));
+                        _candidates[declarationsPair.Key].AddRange(_pkbStore.VarList);
+                    else if (expressionType == ExpressionType.PROCEDURE)
+                        _candidates[declarationsPair.Key].AddRange(_pkbStore.ProcList);
+                    else if (expressionType == ExpressionType.CONST)
+                        _candidates[declarationsPair.Key].AddRange(_pkbStore.ConstList);
                     else
                         _candidates[declarationsPair.Key].AddRange(_pkbStore.GetChildren(0, expressionType.Value).Select(s => s.ProgramLine.ToString()).Distinct().ToList() ?? new List<string>());
                 }
