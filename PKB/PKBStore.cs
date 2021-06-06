@@ -10,7 +10,12 @@ namespace PKB
         public List<KeyValuePair<ExpressionModel, ExpressionModel>> UsesList { get; set; } = new List<KeyValuePair<ExpressionModel, ExpressionModel>>();
         public List<KeyValuePair<ExpressionModel, ExpressionModel>> NextList { get; set; } = new List<KeyValuePair<ExpressionModel, ExpressionModel>>();
         public List<KeyValuePair<ExpressionModel, ExpressionModel>> AffectsList { get; set; } = new List<KeyValuePair<ExpressionModel, ExpressionModel>>();
+        public List<KeyValuePair<ExpressionModel, ExpressionModel>> CallsList { get; set; } = new List<KeyValuePair<ExpressionModel, ExpressionModel>>();
         public List<ParentModel> ParentList { get; set; } = new List<ParentModel>();
+
+        public List<string> ProcList { get; set; } = new List<string>();
+        public List<string> VarList { get; set; } = new List<string>();
+        public List<string> ConstList { get; set; } = new List<string>();
 
         public override string ToString()
         {
@@ -37,7 +42,5 @@ namespace PKB
 
             return x;
         }
-
-        // TODO: PROC_TABLE & VAR_TABLE
     }
 }

@@ -147,7 +147,127 @@ namespace PKB
             return uses;
         }
 
-        private static Statement CreateStatamentOfType(ExpressionType type, int programLine) => type switch
+        public static IEnumerable<Statement> GetNext(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL)
+        {
+            var next = pkb.NextList
+                .Where(x => WhereConditionIsTrue(line, x.Key.Line, type, x.Key.Type))
+                .Select(x => CreateStatamentOfType(x.Value.Type, x.Value.Line));
+            return next;
+        }
+
+        public static IEnumerable<Statement> GetNext_(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL)
+        {
+            var next = pkb.GetNext(line, type);
+            foreach (var item in next)
+            {
+                next = next.Concat(pkb.GetNext_(item.ProgramLine, type));
+            }
+            return next;
+        }
+
+        public static IEnumerable<Statement> GetPrevious(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL)
+        {
+            var previous = pkb.NextList
+                .Where(x => WhereConditionIsTrue(line, x.Value.Line, type, x.Value.Type) && x.Key.Line > 0)
+                .Select(x => CreateStatamentOfType(x.Key.Type, x.Key.Line));
+            return previous;
+        }
+
+        public static IEnumerable<Statement> GetPrevious_(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL)
+        {
+            var previous = pkb.GetPrevious(line, type);
+            foreach (var item in previous)
+            {
+                previous = previous.Concat(pkb.GetPrevious_(item.ProgramLine, type));
+            }
+            return previous;
+        }
+
+        public static IEnumerable<Statement> GetAffects(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL)
+        {
+            var affects = pkb.AffectsList
+                .Where(x => WhereConditionIsTrue(line, x.Key.Line, type, x.Key.Type))
+                .Select(x => CreateStatamentOfType(x.Value.Type, x.Value.Line));
+            return affects;
+        }
+
+        public static IEnumerable<Statement> GetAffects_(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL, List<Statement> lockList = null)
+        {
+            if (lockList == null) lockList = new List<Statement>();
+            var affects = pkb.GetAffects(line, type);
+            var filtered = affects.Where(x => !lockList.Select(x => x.ProgramLine).Contains(x.ProgramLine)).ToList();
+            lockList.AddRange(filtered);
+            foreach (var item in filtered)
+            {
+                affects = affects.Concat(pkb.GetAffects_(item.ProgramLine, type, lockList));
+            }
+            return affects;
+        }
+
+        public static IEnumerable<Statement> GetAffected(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL)
+        {
+            var affects = pkb.AffectsList
+                .Where(x => WhereConditionIsTrue(line, x.Value.Line, type, x.Value.Type))
+                .Select(x => CreateStatamentOfType(x.Key.Type, x.Key.Line));
+            return affects;
+        }
+
+        public static IEnumerable<Statement> GetAffected_(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL, List<Statement> lockList = null)
+        {
+            if (lockList == null) lockList = new List<Statement>();
+            var affected = pkb.GetAffected(line, type);
+            var filtered = affected.Where(x => !lockList.Select(x => x.ProgramLine).Contains(x.ProgramLine)).ToList();
+            lockList.AddRange(filtered);
+            foreach (var item in filtered)
+            {
+                affected = affected.Concat(pkb.GetAffected_(item.ProgramLine, type, lockList));
+            }
+            return affected;
+        }
+
+        public static IEnumerable<string> GetCalls(this IPKBStore pkb, string procName)
+        {
+            var procedures = pkb.CallsList
+                .Where(x => x.Key.Name == procName)
+                .Select(x => x.Value.Name);
+            return procedures;
+        }
+
+        public static IEnumerable<string> GetCalls_(this IPKBStore pkb, string procName, List<string> lockList = null)
+        {
+            if (lockList == null) lockList = new List<string>();
+            var procedures = pkb.GetCalls(procName);
+            var filtered = procedures.Where(x => !lockList.Contains(x)).ToList();
+            lockList.AddRange(filtered);
+            foreach (var item in filtered)
+            {
+                procedures = procedures.Concat(pkb.GetCalls_(item, lockList));
+            }
+            return procedures;
+        }
+
+        public static IEnumerable<string> GetCalled(this IPKBStore pkb, string procName)
+        {
+            var procedures = pkb.CallsList
+                .Where(x => x.Value.Name == procName)
+                .Select(x => x.Key.Name);
+            return procedures;
+        }
+
+        public static IEnumerable<string> GetCalled_(this IPKBStore pkb, string procName, List<string> lockList = null)
+        {
+            if (lockList == null) lockList = new List<string>();
+            var procedures = pkb.GetCalled(procName);
+            var filtered = procedures.Where(x => !lockList.Contains(x)).ToList();
+            lockList.AddRange(filtered);
+            foreach (var item in filtered)
+            {
+                procedures = procedures.Concat(pkb.GetCalled_(item, lockList));
+            }
+            return procedures;
+        }
+
+        private static Statement CreateStatamentOfType(ExpressionType type, int programLine = 0) => type switch
             {
                 ExpressionType.ASSIGN => new Assign { ProgramLine = programLine },
                 ExpressionType.WHILE => new StatementWhile { ProgramLine = programLine },
@@ -155,97 +275,5 @@ namespace PKB
                 ExpressionType.CALL => new Call { ProgramLine = programLine },
                 _ => new Statement { ProgramLine = programLine }
             };
-
-        //next
-
-        public static List<Statement> GetNext(this IPKBStore pkb, Statement stmt1)
-        {
-            throw new NotImplementedException();
-        }
-
-        public static List<Statement> GetNextStar(this IPKBStore pkb, Statement stmt1)
-        {
-            throw new NotImplementedException();
-        }
-
-        public static List<Statement> GetPrevious(this IPKBStore pkb, Statement stmt1)
-        {
-            throw new NotImplementedException();
-        }
-
-        public static List<Statement> GetPreviousStar(this IPKBStore pkb, Statement stmt1)
-        {
-            throw new NotImplementedException();
-        }
-
-        public static bool IsNext(this IPKBStore pkb, Statement stmt1, Statement stmt2)
-        {
-            throw new NotImplementedException();
-        }
-
-        public static bool IsNextStar(this IPKBStore pkb, Statement stmt1, Statement stmt2)
-        {
-            throw new NotImplementedException();
-        }
-
-        //Uses
-
-        public static List<Variable> GetUsed(this IPKBStore pkb, Statement statement)
-        {
-            throw new NotImplementedException();
-        }
-        public static List<Variable> GetUsed(this IPKBStore pkb, Procedure procedure)
-        {
-            throw new NotImplementedException();
-        }
-        public static List<Statement> GetUsesStatements(this IPKBStore pkb, Variable variable)
-        {
-            throw new NotImplementedException();
-        }
-        public static List<Procedure> GetUsesProcedures(this IPKBStore pkb, Variable variable)
-        {
-            throw new NotImplementedException();
-        }
-        public static bool IsUses(this IPKBStore pkb, Variable variable, Statement statement)
-        {
-            throw new NotImplementedException();
-        }
-        public static bool IsUses(this IPKBStore pkb, Variable variable, Procedure procedure)
-        {
-            throw new NotImplementedException();
-        }
-
-        //Calls
-        //which procedures calls procedure p?
-        public static List<Procedure> GetCalls(this IPKBStore pkb, Procedure p)
-        {
-            throw new NotImplementedException();
-        }
-        //Which procedures are called from procedure p?
-        public static List<Procedure> GetCalledFrom(this IPKBStore pkb, Procedure p)
-        {
-            throw new NotImplementedException();
-        }
-        //Does procedure p call q?
-        public static bool IsCalls(this IPKBStore pkb, Procedure p, Procedure q)
-        {
-            throw new NotImplementedException();
-        }
-        //which procedures call procedure p?
-        public static List<Procedure> GetCallsStar(this IPKBStore pkb, Procedure p)
-        {
-            throw new NotImplementedException();
-        }
-        //Which procedures are called from p?
-        public static List<Procedure> GetCalledStarFrom(this IPKBStore pkb, Procedure p)
-        {
-            throw new NotImplementedException();
-        }
-        //Does procedure p call q?
-        public static bool IsCallsStar(this IPKBStore pkb, Procedure p, Procedure q)
-        {
-            throw new NotImplementedException();
-        }
-
     }
 }
