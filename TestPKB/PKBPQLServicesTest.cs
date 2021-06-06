@@ -136,7 +136,8 @@ namespace TestPKB
             Assert.Equal(results.ToList(), result.OrderBy(x => x).Distinct().ToList());
         }
 
-        [InlineData(new int[] { 2, 3 }, "Rectangle")]
+        [Theory]
+        [InlineData(new string[] { "a", "d" }, "Rectangle")]
         public void GetUsedByProcedureTest(string[] results, string name, ExpressionType type = ExpressionType.NULL)
         {
             var pkb = PreparePKB();
@@ -194,6 +195,92 @@ namespace TestPKB
             var result = pkb.GetPrevious_(line, type);
             var preparedResult = result.Select(x => x.ProgramLine).OrderBy(x => x).ToList();
             Assert.Equal(results.ToList(), preparedResult);
+        }
+
+        [Theory]
+        [InlineData(new int[] { 2, 3 }, 1)]
+        [InlineData(new int[] { 1 }, 3)]
+        public void GetAffects(int[] results, int line, ExpressionType type = ExpressionType.NULL)
+        {
+            var pkb = PreparePKB();
+            var result = pkb.GetAffects(line, type);
+            var preparedResult = result.Select(x => x.ProgramLine).OrderBy(x => x).ToList();
+            Assert.Equal(results.ToList(), preparedResult);
+        }
+
+        [Theory]
+        [InlineData(new int[] { 1, 2, 3, 5 }, 1)]
+        [InlineData(new int[] { 1, 2, 3, 5 }, 3)]
+        public void GetAffects_(int[] results, int line, ExpressionType type = ExpressionType.NULL)
+        {
+            var pkb = PreparePKB();
+            var result = pkb.GetAffects_(line, type);
+            var preparedResult = result.Select(x => x.ProgramLine).OrderBy(x => x).ToList();
+            Assert.Equal(results.ToList(), preparedResult.Distinct().ToList());
+        }
+
+        [Theory]
+        [InlineData(new int[] { 1 }, 2)]
+        [InlineData(new int[] { 1 }, 3)]
+        public void GetAffected(int[] results, int line, ExpressionType type = ExpressionType.NULL)
+        {
+            var pkb = PreparePKB();
+            var result = pkb.GetAffected(line, type);
+            var preparedResult = result.Select(x => x.ProgramLine).OrderBy(x => x).ToList();
+            Assert.Equal(results.ToList(), preparedResult);
+        }
+
+        [Theory]
+        [InlineData(new int[] { 1, 2, 3 }, 5)]
+        public void GetAffected_(int[] results, int line, ExpressionType type = ExpressionType.NULL)
+        {
+            var pkb = PreparePKB();
+            var result = pkb.GetAffected_(line, type);
+            var preparedResult = result.Select(x => x.ProgramLine).OrderBy(x => x).ToList();
+            Assert.Equal(results.ToList(), preparedResult.Distinct().ToList());
+        }
+
+        [Theory]
+        [InlineData(new string[] {"Circle"}, "Triangle")]
+        public void GetCalls(string[] results, string procName)
+        {
+            var pkb = PreparePKB();
+            var result = pkb.GetCalls(procName);
+            var preparedResult = result.OrderBy(x => x).ToList();
+            Assert.Equal(results.ToList(), preparedResult);
+        }
+
+        [Theory]
+        [InlineData(new string[] { "Circle", "Squere" }, "Triangle")]
+        [InlineData(new string[] { "LoopProc1", "LoopProc2" }, "LoopProc1")]
+        public void GetCalls_(string[] results, string procName)
+        {
+            var pkb = PreparePKB();
+            var result = pkb.GetCalls_(procName);
+            var preparedResult = result.OrderBy(x => x).ToList();
+            Assert.Equal(results.ToList(), preparedResult.Distinct().ToList());
+        }
+
+        [Theory]
+        [InlineData(new string[] { "Triangle" }, "Circle")]
+        [InlineData(new string[] { "Circle" }, "Squere")]
+        public void GetCalled(string[] results, string procName)
+        {
+            var pkb = PreparePKB();
+            var result = pkb.GetCalled(procName);
+            var preparedResult = result.OrderBy(x => x).ToList();
+            Assert.Equal(results.ToList(), preparedResult);
+        }
+
+        [Theory]
+        [InlineData(new string[] { "Circle", "Triangle"}, "Squere")]
+        [InlineData(new string[] { "LoopProc1", "LoopProc2" }, "LoopProc1")]
+        public void GetCalled_(string[] results, string procName)
+        {
+            var pkb = PreparePKB();
+            var result = pkb.GetCalled_(procName);
+            var preparedResult = result.OrderBy(x => x).ToList();
+            Assert.Equal(results.ToList(), preparedResult.Distinct().ToList());
         }
 
         private IPKBStore PreparePKB()
@@ -289,6 +376,19 @@ namespace TestPKB
             pkb.NextList.Add(KeyValuePair.Create(new ExpressionModel(WithNameType.PROCEDURE, "Rectangle"), new ExpressionModel(StatementType.ASSIGN, "t", 1)));
             pkb.NextList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, "t", 1), new ExpressionModel(StatementType.ASSIGN, "a", 2)));
             pkb.NextList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, "a", 2), new ExpressionModel(StatementType.ASSIGN, "d", 3)));
+
+            // affects/affected
+            pkb.AffectsList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, "t", 1), new ExpressionModel(StatementType.ASSIGN, "a", 2)));
+            pkb.AffectsList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, "t", 1), new ExpressionModel(StatementType.ASSIGN, "d", 3)));
+            pkb.AffectsList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, "d", 3), new ExpressionModel(StatementType.ASSIGN, "t", 1)));
+            pkb.AffectsList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, "t", 2), new ExpressionModel(StatementType.ASSIGN, "a", 5)));
+
+            // calls/called
+            pkb.CallsList.Add(KeyValuePair.Create(new ExpressionModel(WithNameType.PROCEDURE, "Triangle"), new ExpressionModel(WithNameType.PROCEDURE, "Circle")));
+            pkb.CallsList.Add(KeyValuePair.Create(new ExpressionModel(WithNameType.PROCEDURE, "Circle"), new ExpressionModel(WithNameType.PROCEDURE, "Squere")));
+            pkb.CallsList.Add(KeyValuePair.Create(new ExpressionModel(WithNameType.PROCEDURE, "LoopProc1"), new ExpressionModel(WithNameType.PROCEDURE, "LoopProc2")));
+            pkb.CallsList.Add(KeyValuePair.Create(new ExpressionModel(WithNameType.PROCEDURE, "LoopProc2"), new ExpressionModel(WithNameType.PROCEDURE, "LoopProc1")));
+
             return pkb;
         }
     }
