@@ -24,4 +24,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\QueryProcessor\QueryProcessor.csproj" />
+  </ItemGroup>
+
 </Project>

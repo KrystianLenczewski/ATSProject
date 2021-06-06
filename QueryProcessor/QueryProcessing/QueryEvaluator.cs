@@ -15,14 +15,14 @@ namespace QueryProcessor.QueryProcessing
 {
     public class QueryEvaluator
     {
-        private readonly PKBStore _pkbStore;
+        private readonly IPKBStore _pkbStore;
         private ResultTable _resultTable;
         private readonly Dictionary<string, List<string>> _candidates = new Dictionary<string, List<string>>();
 
 
-        public QueryEvaluator()
+        public QueryEvaluator(IPKBStore pkbStore)
         {
-            _pkbStore = PKBInitializer.InitializePKB();
+            _pkbStore = pkbStore;
         }
 
         public List<string> GetQueryResultsRaw(QueryTree queryTree)
@@ -56,6 +56,335 @@ namespace QueryProcessor.QueryProcessing
                     HandleModifies(relationNode);
                 else if (relationNode.RelationType == RelationType.USES)
                     HandleUses(relationNode);
+                else if (relationNode.RelationType == RelationType.NEXT)
+                    HandleNext(relationNode);
+                else if (relationNode.RelationType == RelationType.NEXT_STAR)
+                    HandleNextStar(relationNode);
+                else if (relationNode.RelationType == RelationType.CALLS)
+                    HandleCalls(relationNode);
+                else if (relationNode.RelationType == RelationType.CALLS_STAR)
+                    HandleCallsStar(relationNode);
+                //affects
+
+                _resultTable.SetQueryHasRelations();
+            }
+        }
+
+        private void HandleAffectsStar(RelationNode relationAffectsNode)
+        {
+            ArgumentNode arg1 = relationAffectsNode.Arguments[0];
+            ArgumentNode arg2 = relationAffectsNode.Arguments[1];
+
+            if (_candidates.ContainsKey(arg1.Name) && _candidates.ContainsKey(arg2.Name))
+            {
+                List<string> arg1CandidatesToRemove = new List<string>();
+                List<string> arg2Candidates = new List<string>();
+                foreach (var line in _candidates[arg1.Name])
+                {
+                    var result = _pkbStore.GetAffects_(int.Parse(line)).Select(s => s.ProgramLine.ToString());
+                    if (result.Any())
+                    {
+                        foreach (var arg2Line in result)
+                            _resultTable.AddRelationResult(arg1.Name, line, arg2.Name, arg2Line);
+                        arg2Candidates.AddRange(result);
+                        arg2Candidates = arg2Candidates.Distinct().ToList();
+                    }
+                    else
+                        arg1CandidatesToRemove.Add(line);
+                }
+
+                List<string> arg2CandidatesToRemove = _candidates[arg2.Name].Where(w => !arg2Candidates.Contains(w)).ToList();
+                RemoveCandidates(arg1.Name, arg1CandidatesToRemove);
+                RemoveCandidates(arg2.Name, arg2CandidatesToRemove);
+            }
+            else if (_candidates.ContainsKey(arg1.Name))
+            {
+                List<string> result = _pkbStore.GetAffected_(int.Parse(arg2.Value)).Select(s => s.ProgramLine.ToString()).ToList();
+                foreach (string arg1Line in result)
+                    _resultTable.AddRelationResult(arg1.Name, arg1Line);
+
+                List<string> arg1CandidatesToRemove = _candidates[arg1.Name].Where(w => !result.Contains(w)).ToList();
+                RemoveCandidates(arg1.Name, arg1CandidatesToRemove);
+            }
+            else if (_candidates.ContainsKey(arg2.Name))
+            {
+                List<string> result = _pkbStore.GetAffects_(int.Parse(arg1.Value)).Select(s => s.ProgramLine.ToString()).ToList();
+                foreach (string arg2Line in result)
+                    _resultTable.AddRelationResult(arg2.Name, arg2Line);
+
+                List<string> arg2CandidatesToRemove = _candidates[arg2.Name].Where(w => !result.Contains(w)).ToList();
+                RemoveCandidates(arg2.Name, arg2CandidatesToRemove);
+            }
+            else
+            {
+                List<string> result = _pkbStore.GetAffects_(int.Parse(arg1.Value)).Select(s => s.ProgramLine.ToString()).ToList();
+                if (!result.Contains(arg2.Value))
+                    _resultTable.SetFalseBoolResult();
+            }
+        }
+
+        private void HandleAffects(RelationNode relationAffectsNode)
+        {
+            ArgumentNode arg1 = relationAffectsNode.Arguments[0];
+            ArgumentNode arg2 = relationAffectsNode.Arguments[1];
+
+            if (_candidates.ContainsKey(arg1.Name) && _candidates.ContainsKey(arg2.Name))
+            {
+                List<string> arg1CandidatesToRemove = new List<string>();
+                List<string> arg2Candidates = new List<string>();
+                foreach (var line in _candidates[arg1.Name])
+                {
+                    var result = _pkbStore.GetAffects(int.Parse(line)).Select(s => s.ProgramLine.ToString());
+                    if (result.Any())
+                    {
+                        foreach (var arg2Line in result)
+                            _resultTable.AddRelationResult(arg1.Name, line, arg2.Name, arg2Line);
+                        arg2Candidates.AddRange(result);
+                        arg2Candidates = arg2Candidates.Distinct().ToList();
+                    }
+                    else
+                        arg1CandidatesToRemove.Add(line);
+                }
+
+                List<string> arg2CandidatesToRemove = _candidates[arg2.Name].Where(w => !arg2Candidates.Contains(w)).ToList();
+                RemoveCandidates(arg1.Name, arg1CandidatesToRemove);
+                RemoveCandidates(arg2.Name, arg2CandidatesToRemove);
+            }
+            else if (_candidates.ContainsKey(arg1.Name))
+            {
+                List<string> result = _pkbStore.GetAffected(int.Parse(arg2.Value)).Select(s => s.ProgramLine.ToString()).ToList();
+                foreach (string arg1Line in result)
+                    _resultTable.AddRelationResult(arg1.Name, arg1Line);
+
+                List<string> arg1CandidatesToRemove = _candidates[arg1.Name].Where(w => !result.Contains(w)).ToList();
+                RemoveCandidates(arg1.Name, arg1CandidatesToRemove);
+            }
+            else if (_candidates.ContainsKey(arg2.Name))
+            {
+                List<string> result = _pkbStore.GetAffects(int.Parse(arg1.Value)).Select(s => s.ProgramLine.ToString()).ToList();
+                foreach (string arg2Line in result)
+                    _resultTable.AddRelationResult(arg2.Name, arg2Line);
+
+                List<string> arg2CandidatesToRemove = _candidates[arg2.Name].Where(w => !result.Contains(w)).ToList();
+                RemoveCandidates(arg2.Name, arg2CandidatesToRemove);
+            }
+            else
+            {
+                List<string> result = _pkbStore.GetAffects(int.Parse(arg1.Value)).Select(s => s.ProgramLine.ToString()).ToList();
+                if (!result.Contains(arg2.Value))
+                    _resultTable.SetFalseBoolResult();
+            }
+        }
+
+        private void HandleCallsStar(RelationNode relationCallsNode)
+        {
+            ArgumentNode arg1 = relationCallsNode.Arguments[0];
+            ArgumentNode arg2 = relationCallsNode.Arguments[1];
+
+            if (_candidates.ContainsKey(arg1.Name) && _candidates.ContainsKey(arg2.Name))
+            {
+                List<string> arg1CandidatesToRemove = new List<string>();
+                List<string> arg2Candidates = new List<string>();
+                foreach (var line in _candidates[arg1.Name])
+                {
+                    var result = _pkbStore.GetCalls_(line);
+                    if (result.Any())
+                    {
+                        foreach (var arg2Line in result)
+                            _resultTable.AddRelationResult(arg1.Name, line, arg2.Name, arg2Line);
+                        arg2Candidates.AddRange(result);
+                        arg2Candidates = arg2Candidates.Distinct().ToList();
+                    }
+                    else
+                        arg1CandidatesToRemove.Add(line);
+                }
+
+                List<string> arg2CandidatesToRemove = _candidates[arg2.Name].Where(w => !arg2Candidates.Contains(w)).ToList();
+                RemoveCandidates(arg1.Name, arg1CandidatesToRemove);
+                RemoveCandidates(arg2.Name, arg2CandidatesToRemove);
+            }
+            else if (_candidates.ContainsKey(arg1.Name))
+            {
+                List<string> result = _pkbStore.GetCalled_(arg2.Value).ToList();
+                foreach (string arg1Line in result)
+                    _resultTable.AddRelationResult(arg1.Name, arg1Line);
+
+                List<string> arg1CandidatesToRemove = _candidates[arg1.Name].Where(w => !result.Contains(w)).ToList();
+                RemoveCandidates(arg1.Name, arg1CandidatesToRemove);
+            }
+            else if (_candidates.ContainsKey(arg2.Name))
+            {
+                List<string> result = _pkbStore.GetCalls_(arg1.Value).ToList();
+                foreach (string arg2Line in result)
+                    _resultTable.AddRelationResult(arg2.Name, arg2Line);
+
+                List<string> arg2CandidatesToRemove = _candidates[arg2.Name].Where(w => !result.Contains(w)).ToList();
+                RemoveCandidates(arg2.Name, arg2CandidatesToRemove);
+            }
+            else
+            {
+                List<string> result = _pkbStore.GetCalls_(arg1.Value).ToList();
+                if (!result.Contains(arg2.Value))
+                    _resultTable.SetFalseBoolResult();
+            }
+        }
+
+        private void HandleCalls(RelationNode relationCallsNode)
+        {
+            ArgumentNode arg1 = relationCallsNode.Arguments[0];
+            ArgumentNode arg2 = relationCallsNode.Arguments[1];
+
+            if (_candidates.ContainsKey(arg1.Name) && _candidates.ContainsKey(arg2.Name))
+            {
+                List<string> arg1CandidatesToRemove = new List<string>();
+                List<string> arg2Candidates = new List<string>();
+                foreach (var line in _candidates[arg1.Name])
+                {
+                    var result = _pkbStore.GetCalls(line);
+                    if (result.Any())
+                    {
+                        foreach (var arg2Line in result)
+                            _resultTable.AddRelationResult(arg1.Name, line, arg2.Name, arg2Line);
+                        arg2Candidates.AddRange(result);
+                        arg2Candidates = arg2Candidates.Distinct().ToList();
+                    }
+                    else
+                        arg1CandidatesToRemove.Add(line);
+                }
+
+                List<string> arg2CandidatesToRemove = _candidates[arg2.Name].Where(w => !arg2Candidates.Contains(w)).ToList();
+                RemoveCandidates(arg1.Name, arg1CandidatesToRemove);
+                RemoveCandidates(arg2.Name, arg2CandidatesToRemove);
+            }
+            else if (_candidates.ContainsKey(arg1.Name))
+            {
+                List<string> result = _pkbStore.GetCalled(arg2.Value).ToList();
+                foreach (string arg1Line in result)
+                    _resultTable.AddRelationResult(arg1.Name, arg1Line);
+
+                List<string> arg1CandidatesToRemove = _candidates[arg1.Name].Where(w => !result.Contains(w)).ToList();
+                RemoveCandidates(arg1.Name, arg1CandidatesToRemove);
+            }
+            else if (_candidates.ContainsKey(arg2.Name))
+            {
+                List<string> result = _pkbStore.GetCalls(arg1.Value).ToList();
+                foreach (string arg2Line in result)
+                    _resultTable.AddRelationResult(arg2.Name, arg2Line);
+
+                List<string> arg2CandidatesToRemove = _candidates[arg2.Name].Where(w => !result.Contains(w)).ToList();
+                RemoveCandidates(arg2.Name, arg2CandidatesToRemove);
+            }
+            else
+            {
+                List<string> result = _pkbStore.GetCalls(arg1.Value).ToList();
+                if (!result.Contains(arg2.Value))
+                    _resultTable.SetFalseBoolResult();
+            }
+        }
+
+        private void HandleNextStar(RelationNode relationNextNode)
+        {
+            ArgumentNode arg1 = relationNextNode.Arguments[0];
+            ArgumentNode arg2 = relationNextNode.Arguments[1];
+
+            if (_candidates.ContainsKey(arg1.Name) && _candidates.ContainsKey(arg2.Name))
+            {
+                List<string> arg1CandidatesToRemove = new List<string>();
+                List<string> arg2Candidates = new List<string>();
+                foreach (var line in _candidates[arg1.Name])
+                {
+                    var result = _pkbStore.GetNext_(int.Parse(line)).Select(s => s.ProgramLine.ToString());
+                    if (result.Any())
+                    {
+                        foreach (var arg2Line in result)
+                            _resultTable.AddRelationResult(arg1.Name, line, arg2.Name, arg2Line);
+                        arg2Candidates.AddRange(result);
+                        arg2Candidates = arg2Candidates.Distinct().ToList();
+                    }
+                    else
+                        arg1CandidatesToRemove.Add(line);
+                }
+
+                List<string> arg2CandidatesToRemove = _candidates[arg2.Name].Where(w => !arg2Candidates.Contains(w)).ToList();
+                RemoveCandidates(arg1.Name, arg1CandidatesToRemove);
+                RemoveCandidates(arg2.Name, arg2CandidatesToRemove);
+            }
+            else if (_candidates.ContainsKey(arg1.Name))
+            {
+                List<string> result = _pkbStore.GetPrevious_(int.Parse(arg2.Value)).Select(s => s.ProgramLine.ToString()).ToList();
+                foreach (string arg1Line in result)
+                    _resultTable.AddRelationResult(arg1.Name, arg1Line);
+
+                List<string> arg1CandidatesToRemove = _candidates[arg1.Name].Where(w => !result.Contains(w)).ToList();
+                RemoveCandidates(arg1.Name, arg1CandidatesToRemove);
+            }
+            else if (_candidates.ContainsKey(arg2.Name))
+            {
+                List<string> result = _pkbStore.GetNext_(int.Parse(arg1.Value)).Select(s => s.ProgramLine.ToString()).ToList();
+                foreach (string arg2Line in result)
+                    _resultTable.AddRelationResult(arg2.Name, arg2Line);
+
+                List<string> arg2CandidatesToRemove = _candidates[arg2.Name].Where(w => !result.Contains(w)).ToList();
+                RemoveCandidates(arg2.Name, arg2CandidatesToRemove);
+            }
+            else
+            {
+                List<string> result = _pkbStore.GetNext_(int.Parse(arg1.Value)).Select(s => s.ProgramLine.ToString()).ToList();
+                if (!result.Contains(arg2.Value))
+                    _resultTable.SetFalseBoolResult();
+            }
+        }
+
+        private void HandleNext(RelationNode relationNextNode)
+        {
+            ArgumentNode arg1 = relationNextNode.Arguments[0];
+            ArgumentNode arg2 = relationNextNode.Arguments[1];
+
+            if (_candidates.ContainsKey(arg1.Name) && _candidates.ContainsKey(arg2.Name))
+            {
+                List<string> arg1CandidatesToRemove = new List<string>();
+                List<string> arg2Candidates = new List<string>();
+                foreach (var line in _candidates[arg1.Name])
+                {
+                    var result = _pkbStore.GetNext(int.Parse(line)).Select(s => s.ProgramLine.ToString());
+                    if (result.Any())
+                    {
+                        foreach (var arg2Line in result)
+                            _resultTable.AddRelationResult(arg1.Name, line, arg2.Name, arg2Line);
+                        arg2Candidates.AddRange(result);
+                        arg2Candidates = arg2Candidates.Distinct().ToList();
+                    }
+                    else
+                        arg1CandidatesToRemove.Add(line);
+                }
+
+                List<string> arg2CandidatesToRemove = _candidates[arg2.Name].Where(w => !arg2Candidates.Contains(w)).ToList();
+                RemoveCandidates(arg1.Name, arg1CandidatesToRemove);
+                RemoveCandidates(arg2.Name, arg2CandidatesToRemove);
+            }
+            else if (_candidates.ContainsKey(arg1.Name))
+            {
+                List<string> result = _pkbStore.GetPrevious(int.Parse(arg2.Value)).Select(s => s.ProgramLine.ToString()).ToList();
+                foreach (string arg1Line in result)
+                    _resultTable.AddRelationResult(arg1.Name, arg1Line);
+
+                List<string> arg1CandidatesToRemove = _candidates[arg1.Name].Where(w => !result.Contains(w)).ToList();
+                RemoveCandidates(arg1.Name, arg1CandidatesToRemove);
+            }
+            else if (_candidates.ContainsKey(arg2.Name))
+            {
+                List<string> result = _pkbStore.GetNext(int.Parse(arg1.Value)).Select(s => s.ProgramLine.ToString()).ToList();
+                foreach (string arg2Line in result)
+                    _resultTable.AddRelationResult(arg2.Name, arg2Line);
+
+                List<string> arg2CandidatesToRemove = _candidates[arg2.Name].Where(w => !result.Contains(w)).ToList();
+                RemoveCandidates(arg2.Name, arg2CandidatesToRemove);
+            }
+            else
+            {
+                List<string> result = _pkbStore.GetNext(int.Parse(arg1.Value)).Select(s => s.ProgramLine.ToString()).ToList();
+                if (!result.Contains(arg2.Value))
+                    _resultTable.SetFalseBoolResult();
             }
         }
 
@@ -402,7 +731,11 @@ namespace QueryProcessor.QueryProcessing
                     _candidates[declarationsPair.Key] = new List<string>();
 
                     if (expressionType == ExpressionType.VAR)
-                        _candidates[declarationsPair.Key].AddRange(_pkbStore.GetModifies(0));
+                        _candidates[declarationsPair.Key].AddRange(_pkbStore.VarList);
+                    else if (expressionType == ExpressionType.PROCEDURE)
+                        _candidates[declarationsPair.Key].AddRange(_pkbStore.ProcList);
+                    else if (expressionType == ExpressionType.CONST)
+                        _candidates[declarationsPair.Key].AddRange(_pkbStore.ConstList);
                     else
                         _candidates[declarationsPair.Key].AddRange(_pkbStore.GetChildren(0, expressionType.Value).Select(s => s.ProgramLine.ToString()).Distinct().ToList() ?? new List<string>());
                 }
