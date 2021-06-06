@@ -15,14 +15,14 @@ namespace QueryProcessor.QueryProcessing
 {
     public class QueryEvaluator
     {
-        private readonly PKBStore _pkbStore;
+        private readonly IPKBStore _pkbStore;
         private ResultTable _resultTable;
         private readonly Dictionary<string, List<string>> _candidates = new Dictionary<string, List<string>>();
 
 
-        public QueryEvaluator()
+        public QueryEvaluator(IPKBStore pkbStore)
         {
-            _pkbStore = PKBInitializer.InitializePKB();
+            _pkbStore = pkbStore;
         }
 
         public List<string> GetQueryResultsRaw(QueryTree queryTree)
@@ -56,6 +56,8 @@ namespace QueryProcessor.QueryProcessing
                     HandleModifies(relationNode);
                 else if (relationNode.RelationType == RelationType.USES)
                     HandleUses(relationNode);
+
+                _resultTable.SetQueryHasRelations();
             }
         }
 
