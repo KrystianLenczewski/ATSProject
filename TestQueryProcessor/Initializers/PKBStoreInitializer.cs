@@ -2,11 +2,13 @@
 using Shared;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
-namespace QueryProcessor.Moqs
+namespace TestQueryProcessor.Initializers
 {
-    public static class PKBInitializer
+    public class PKBStoreInitializer
     {
         public static PKBStore InitializePKB()
         {
@@ -29,7 +31,7 @@ namespace QueryProcessor.Moqs
             pkb.ParentList.Add(new ParentModel(new ExpressionModel(StatementType.IF, 8), new ExpressionModel(StatementType.ASSIGN, 14), 1));
             pkb.ParentList.Add(new ParentModel(new ExpressionModel(StatementType.IF, 8), new ExpressionModel(StatementType.CALL, 15), 1));
             pkb.ParentList.Add(new ParentModel(new ExpressionModel(StatementType.IF, 8), new ExpressionModel(StatementType.ASSIGN, 16), 1));
-          
+
             pkb.ParentList.Add(new ParentModel(new ExpressionModel(StatementType.WHILE, 10), new ExpressionModel(StatementType.ASSIGN, 11), 1));
             pkb.ParentList.Add(new ParentModel(new ExpressionModel(StatementType.WHILE, 10), new ExpressionModel(StatementType.ASSIGN, 12), 1));
 
@@ -43,9 +45,9 @@ namespace QueryProcessor.Moqs
             //Triangle
             pkb.ParentList.Add(new ParentModel(new ExpressionModel(WithNameType.PROCEDURE, "Triangle"), new ExpressionModel(StatementType.WHILE, 23), 1));
             pkb.ParentList.Add(new ParentModel(new ExpressionModel(WithNameType.PROCEDURE, "Triangle"), new ExpressionModel(StatementType.ASSIGN, 27), 1));
-            pkb.ParentList.Add(new ParentModel(new ExpressionModel(StatementType.WHILE, 23), new ExpressionModel(StatementType.IF,24), 1));
-            pkb.ParentList.Add(new ParentModel(new ExpressionModel(StatementType.IF, 24), new ExpressionModel(StatementType.ASSIGN,25), 1));
-            pkb.ParentList.Add(new ParentModel(new ExpressionModel(StatementType.IF, 24), new ExpressionModel(StatementType.ASSIGN,26), 1));
+            pkb.ParentList.Add(new ParentModel(new ExpressionModel(StatementType.WHILE, 23), new ExpressionModel(StatementType.IF, 24), 1));
+            pkb.ParentList.Add(new ParentModel(new ExpressionModel(StatementType.IF, 24), new ExpressionModel(StatementType.ASSIGN, 25), 1));
+            pkb.ParentList.Add(new ParentModel(new ExpressionModel(StatementType.IF, 24), new ExpressionModel(StatementType.ASSIGN, 26), 1));
 
             //Hexagon
             pkb.ParentList.Add(new ParentModel(new ExpressionModel(WithNameType.PROCEDURE, "Hexagon"), new ExpressionModel(StatementType.ASSIGN, 28), 1));
@@ -64,18 +66,18 @@ namespace QueryProcessor.Moqs
             pkb.FollowsList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.IF, 8), new ExpressionModel(StatementType.CALL, 17)));
 
             //modifies
-            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN,1), new ExpressionModel(FactorType.VAR,"t")));
-            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN,2), new ExpressionModel(FactorType.VAR,"a")));
-            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN,3), new ExpressionModel(FactorType.VAR,"d")));
-            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN,5), new ExpressionModel(FactorType.VAR,"b")));
-            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN,7), new ExpressionModel(FactorType.VAR,"b")));
-            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN,9), new ExpressionModel(FactorType.VAR,"k")));
-            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.WHILE,10), new ExpressionModel(FactorType.VAR,"c")));
-            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN,11), new ExpressionModel(FactorType.VAR,"d")));
-            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN,12), new ExpressionModel(FactorType.VAR,"c")));
-            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN,13), new ExpressionModel(FactorType.VAR,"a")));
-            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN,14), new ExpressionModel(FactorType.VAR,"a")));
-            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN,16), new ExpressionModel(FactorType.VAR,"c")));
+            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, 1), new ExpressionModel(FactorType.VAR, "t")));
+            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, 2), new ExpressionModel(FactorType.VAR, "a")));
+            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, 3), new ExpressionModel(FactorType.VAR, "d")));
+            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, 5), new ExpressionModel(FactorType.VAR, "b")));
+            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, 7), new ExpressionModel(FactorType.VAR, "b")));
+            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, 9), new ExpressionModel(FactorType.VAR, "k")));
+            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.WHILE, 10), new ExpressionModel(FactorType.VAR, "c")));
+            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, 11), new ExpressionModel(FactorType.VAR, "d")));
+            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, 12), new ExpressionModel(FactorType.VAR, "c")));
+            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, 13), new ExpressionModel(FactorType.VAR, "a")));
+            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, 14), new ExpressionModel(FactorType.VAR, "a")));
+            pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, 16), new ExpressionModel(FactorType.VAR, "c")));
 
             pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.WHILE, 18), new ExpressionModel(FactorType.VAR, "c")));
             pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, 19), new ExpressionModel(FactorType.VAR, "t")));
