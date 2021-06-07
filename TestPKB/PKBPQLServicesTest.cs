@@ -168,6 +168,7 @@ namespace TestPKB
 
         [Theory]
         [InlineData(new int[] { 2, 3 }, 1)]
+        [InlineData(new int[] { 10, 11, 11, 12 }, 10)]
         public void GetNext_Test(int[] results, int line, ExpressionType type = ExpressionType.NULL)
         {
             var pkb = PreparePKB();
@@ -376,6 +377,9 @@ namespace TestPKB
             pkb.NextList.Add(KeyValuePair.Create(new ExpressionModel(WithNameType.PROCEDURE, "Rectangle"), new ExpressionModel(StatementType.ASSIGN, "t", 1)));
             pkb.NextList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, "t", 1), new ExpressionModel(StatementType.ASSIGN, "a", 2)));
             pkb.NextList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, "a", 2), new ExpressionModel(StatementType.ASSIGN, "d", 3)));
+            pkb.NextList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.WHILE, 10), new ExpressionModel(StatementType.ASSIGN, "d", 11)));
+            pkb.NextList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, "d", 11), new ExpressionModel(StatementType.ASSIGN, "c", 12)));
+            pkb.NextList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, "c", 12), new ExpressionModel(StatementType.WHILE, "c", 10)));
 
             // affects/affected
             pkb.AffectsList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, "t", 1), new ExpressionModel(StatementType.ASSIGN, "a", 2)));

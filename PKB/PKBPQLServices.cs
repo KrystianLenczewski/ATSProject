@@ -19,24 +19,20 @@ namespace PKB
             return children;
         }
 
-        public static IEnumerable<Statement> GetChildren_(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL)
+        public static IEnumerable<Statement> GetChildren_(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL, List<Statement> lockList = null)
         {
+            if (lockList == null) lockList = new List<Statement>();
             var children = pkb.GetChildren(line, type);
-            foreach (var child in children)
+            var filtered = children.Where(x => !lockList.Select(x => x.ProgramLine).Contains(x.ProgramLine)).ToList();
+            lockList.AddRange(filtered);
+            foreach (var child in filtered)
             {
-                children = children.Concat(pkb.GetChildren_(child.ProgramLine, type)).ToList();
+                children = children.Concat(pkb.GetChildren_(child.ProgramLine, type, lockList));
             }
 
             return children;
         }
 
-        /// <summary>
-        /// Get parents list of statement set on line specified in argument filtered by type argument
-        /// </summary>
-        /// <param name="pkb"></param>
-        /// <param name="line"></param>
-        /// <param name="type"></param>
-        /// <returns></returns>
         public static IEnumerable<Statement> GetParents(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL)
         {
             var parent = pkb.ParentList
@@ -45,12 +41,15 @@ namespace PKB
             return parent;
         }
 
-        public static IEnumerable<Statement> GetParents_(this IPKBStore pkb, int line, ExpressionType type)
+        public static IEnumerable<Statement> GetParents_(this IPKBStore pkb, int line, ExpressionType type, List<Statement> lockList = null)
         {
+            if (lockList == null) lockList = new List<Statement>();
             var parents = pkb.GetParents(line, type);
-            foreach (var parent in parents)
+            var filtered = parents.Where(x => !lockList.Select(x => x.ProgramLine).Contains(x.ProgramLine)).ToList();
+            lockList.AddRange(filtered);
+            foreach (var parent in filtered)
             {
-                parents = parents.Concat(pkb.GetParents_(parent.ProgramLine, type));
+                parents = parents.Concat(pkb.GetParents_(parent.ProgramLine, type, lockList));
             }
             return parents;
         }
@@ -71,22 +70,28 @@ namespace PKB
             return follows;
         }
 
-        public static IEnumerable<Statement> GetFollows_(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL)
+        public static IEnumerable<Statement> GetFollows_(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL, List<Statement> lockList = null)
         {
+            if (lockList == null) lockList = new List<Statement>();
             var follows = pkb.GetFollows(line, type);
-            foreach (var follow in follows)
+            var filtered = follows.Where(x => !lockList.Select(x => x.ProgramLine).Contains(x.ProgramLine)).ToList();
+            lockList.AddRange(filtered);
+            foreach (var follow in filtered)
             {
-                follows = follows.Concat(pkb.GetFollows_(follow.ProgramLine, type));
+                follows = follows.Concat(pkb.GetFollows_(follow.ProgramLine, type, lockList));
             }
             return follows;
         }
 
-        public static IEnumerable<Statement> GetFollowed_(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL)
+        public static IEnumerable<Statement> GetFollowed_(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL, List<Statement> lockList = null)
         {
+            if (lockList == null) lockList = new List<Statement>();
             var followed = pkb.GetFollowed(line, type);
-            foreach (var item in followed)
+            var filtered = followed.Where(x => !lockList.Select(x => x.ProgramLine).Contains(x.ProgramLine)).ToList();
+            lockList.AddRange(filtered);
+            foreach (var item in filtered)
             {
-                followed = followed.Concat(pkb.GetFollowed_(item.ProgramLine, type));
+                followed = followed.Concat(pkb.GetFollowed_(item.ProgramLine, type, lockList));
             }
             return followed;
         }
@@ -155,12 +160,15 @@ namespace PKB
             return next;
         }
 
-        public static IEnumerable<Statement> GetNext_(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL)
+        public static IEnumerable<Statement> GetNext_(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL, List<Statement> lockList = null)
         {
+            if (lockList == null) lockList = new List<Statement>();
             var next = pkb.GetNext(line, type);
-            foreach (var item in next)
+            var filtered = next.Where(x => !lockList.Select(x => x.ProgramLine).Contains(x.ProgramLine)).ToList();
+            lockList.AddRange(filtered);
+            foreach (var item in filtered)
             {
-                next = next.Concat(pkb.GetNext_(item.ProgramLine, type));
+                next = next.Concat(pkb.GetNext_(item.ProgramLine, type, lockList));
             }
             return next;
         }
@@ -173,12 +181,15 @@ namespace PKB
             return previous;
         }
 
-        public static IEnumerable<Statement> GetPrevious_(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL)
+        public static IEnumerable<Statement> GetPrevious_(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL, List<Statement> lockList = null)
         {
+            if (lockList == null) lockList = new List<Statement>();
             var previous = pkb.GetPrevious(line, type);
-            foreach (var item in previous)
+            var filtered = previous.Where(x => !lockList.Select(x => x.ProgramLine).Contains(x.ProgramLine)).ToList();
+            lockList.AddRange(filtered);
+            foreach (var item in filtered)
             {
-                previous = previous.Concat(pkb.GetPrevious_(item.ProgramLine, type));
+                previous = previous.Concat(pkb.GetPrevious_(item.ProgramLine, type, lockList));
             }
             return previous;
         }
