@@ -114,7 +114,8 @@ namespace QueryProcessor.ResultGeneration
 
         public bool GetBooleanResult()
         {
-            return _boolResult && _resultTableRows.Any();
+            return _boolResult; 
+                //_resultTableRows.Any();
         }
 
         private bool ExistsResult(string firstSynonimName, string firstSynonimValue, string secondSynonimName = "", string secondSynonimValue = "")

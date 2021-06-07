@@ -25,7 +25,19 @@ namespace TestQueryProcessor.Data
             return new List<KeyValuePair<string, List<string>>>
             {
 
-                KeyValuePair.Create("prog_line n2; select BOOLEAN such that Next (1,2)",  new List<string>{ "true "}),
+                KeyValuePair.Create("select BOOLEAN such that Next (1,2)",  new List<string>{ "True"}),
+                KeyValuePair.Create("select BOOLEAN such that Next (6,8)",  new List<string>{ "False"}),
+                KeyValuePair.Create("select BOOLEAN such that Next (8,9)",  new List<string>{ "True"}),
+                KeyValuePair.Create("select BOOLEAN such that Next (10,11)",  new List<string>{ "True"}),
+                KeyValuePair.Create("select BOOLEAN such that Next (12,10)",  new List<string>{ "True"}),
+                KeyValuePair.Create("select BOOLEAN such that Next (12,11)",  new List<string>{ "False"}),
+                KeyValuePair.Create("select BOOLEAN such that Next (13,14)",  new List<string>{ "False"}),
+                KeyValuePair.Create("select BOOLEAN such that Next (17,18)",  new List<string>{ "False"}),
+                KeyValuePair.Create("select BOOLEAN such that Next (23,27)",  new List<string>{ "True"}),
+                KeyValuePair.Create("select BOOLEAN such that Next* (9,9)",  new List<string>{ "False"}),
+                KeyValuePair.Create("select BOOLEAN such that Next* (10,10)",  new List<string>{ "True"}),
+                KeyValuePair.Create("select BOOLEAN such that Next* (12,12)",  new List<string>{ "True"}),
+                KeyValuePair.Create("select BOOLEAN such that Next* (20,20)",  new List<string>{ "True"}),
 
             };
         }
