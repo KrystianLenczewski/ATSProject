@@ -64,6 +64,11 @@ namespace TestQueryProcessor.Initializers
             pkb.FollowsList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.WHILE, 10), new ExpressionModel(StatementType.ASSIGN, 13)));
             pkb.FollowsList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, 11), new ExpressionModel(StatementType.ASSIGN, 12)));
             pkb.FollowsList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.IF, 8), new ExpressionModel(StatementType.CALL, 17)));
+            //moje
+            pkb.FollowsList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.WHILE, 18), new ExpressionModel(StatementType.ASSIGN, 22)));
+            pkb.FollowsList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, 19), new ExpressionModel(StatementType.CALL, 20)));
+            pkb.FollowsList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.CALL, 20), new ExpressionModel(StatementType.ASSIGN, 21)));
+            pkb.FollowsList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.WHILE, 23), new ExpressionModel(StatementType.ASSIGN, 27)));
 
             //modifies
             pkb.ModifiesList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN, 1), new ExpressionModel(FactorType.VAR, "t")));
@@ -226,6 +231,19 @@ namespace TestQueryProcessor.Initializers
 
             pkb.UsesList.Add(KeyValuePair.Create(new ExpressionModel(WithNameType.PROCEDURE, "Hexagon"), new ExpressionModel(FactorType.VAR, "a")));
             pkb.UsesList.Add(KeyValuePair.Create(new ExpressionModel(WithNameType.PROCEDURE, "Hexagon"), new ExpressionModel(FactorType.VAR, "t")));
+
+
+            //calls
+            pkb.CallsList.Add(KeyValuePair.Create(new ExpressionModel(WithNameType.PROCEDURE, "Circle"), new ExpressionModel(WithNameType.PROCEDURE, "Triangle")));
+            pkb.CallsList.Add(KeyValuePair.Create(new ExpressionModel(WithNameType.PROCEDURE, "Circle"), new ExpressionModel(WithNameType.PROCEDURE, "Hexagon")));
+            pkb.CallsList.Add(KeyValuePair.Create(new ExpressionModel(WithNameType.PROCEDURE, "Circle"), new ExpressionModel(WithNameType.PROCEDURE, "Rectangle")));
+            pkb.CallsList.Add(KeyValuePair.Create(new ExpressionModel(WithNameType.PROCEDURE, "Rectangle"), new ExpressionModel(WithNameType.PROCEDURE, "Triangle")));
+            
+            //next
+            pkb.NextList.Add(KeyValuePair.Create(new ExpressionModel(StatementType.ASSIGN,1), new ExpressionModel(StatementType.ASSIGN, 2)));
+
+            pkb.VarList.AddRange(new List<string>() { "a", "c", "d", "k", "b", "t" });
+            pkb.ProcList.AddRange(new List<string>() { "Triangle", "Hexagon", "Circle", "Rectangle" });
 
             return pkb;
         }

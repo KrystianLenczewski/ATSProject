@@ -632,7 +632,12 @@ namespace QueryProcessor.QueryProcessing
             }
             else if (_candidates.ContainsKey(arg2.Name))
             {
-                List<string> result = _pkbStore.GetModifies(arg1.Value).ToList();
+
+                List<string> result = new List<string>();
+                if (arg1.RelationArgumentType == RelationArgumentType.Integer)
+                    result = _pkbStore.GetModifies(Convert.ToInt32(arg1.Value)).ToList();
+                else
+                    result = _pkbStore.GetModifies(arg1.Value).ToList();
                 foreach (string arg2Line in result)
                     _resultTable.AddRelationResult(arg2.Name, arg2Line);
 
