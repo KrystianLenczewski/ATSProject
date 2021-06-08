@@ -5,9 +5,7 @@ using PKB;
 using Newtonsoft.Json.Linq;
 using System.IO;
 using System.Text;
-using Newtonsoft.Json;
 using SPAFrontend.mdoels;
-using System.Text.RegularExpressions;
 using System.Linq;
 
 namespace SPAFrontend
@@ -23,27 +21,34 @@ namespace SPAFrontend
             {
                 string currentPath = "";
                 string line = "";
+                int counter = 1;
+                int procedureCounter = 0;
+                string lineWithNumber = string.Empty;
                 List<DepthRownum> depthRownumPair = new List<DepthRownum>();
 
                 while ((line = reader.ReadLine()) != null)
                 {
-                    if (line.Contains("procedure"))
+                    if (string.IsNullOrEmpty(line) || string.IsNullOrWhiteSpace(line)) { }
+                    else if (line.Contains("procedure"))
                     {
-                        final.Add("procedure", "");
-                        currentPath = "$.procedure";
+                        procedureCounter++;
+                        var tmpPath = $"procedure-{procedureCounter}";
+                        final.Add(tmpPath, "");
+                        currentPath = $"$.{tmpPath}";
                         var obj = CreateObjectForPath(currentPath + ".name", (line.Split(' ')[1]));
                         final.Merge(obj);
                         currentPath += ".stmtList";
                     }
                     else if (line.Contains("while"))
                     {
-                        string rownum = line.Split(' ')[0].Trim('.');
+                        string rownum = counter.ToString();
+                        counter++;
 
                         PKBParserServices.SetUses(pkb,
                             new ExpressionModel(StatementType.WHILE, Int32.Parse(rownum)),
                             new ExpressionModel(FactorType.VAR, line.Split(' ')[2]));
 
-                        if (currentPath.Equals("$.procedure.stmtList"))
+                        if (currentPath.Equals($"$.procedure-{procedureCounter}.stmtList"))
                         {
                             ungroupedChildren.Add(new ExpressionModel(StatementType.WHILE, Int32.Parse(rownum)));
                         }
@@ -79,9 +84,10 @@ namespace SPAFrontend
                     }
                     else if (line.Contains("call"))
                     {
-                        string rownum = line.Split(' ')[0].Trim('.');
+                        string rownum = counter.ToString();
+                        counter++;
 
-                        if (currentPath.Equals("$.procedure.stmtList"))
+                        if (currentPath.Equals($"$.procedure-{procedureCounter}.stmtList"))
                         {
                             ungroupedChildren.Add(new ExpressionModel(StatementType.CALL, Int32.Parse(rownum)));
                         }
@@ -95,9 +101,10 @@ namespace SPAFrontend
                     }
                     else if (line.Contains("if"))
                     {
-                        string rownum = line.Split(' ')[0].Trim('.');
+                        string rownum = counter.ToString();
+                        counter++;
 
-                        if (currentPath.Equals("$.procedure.stmtList"))
+                        if (currentPath.Equals($"$.procedure-{procedureCounter}.stmtList"))
                         {
                             ungroupedChildren.Add(new ExpressionModel(StatementType.IF, Int32.Parse(rownum)));
                         }
@@ -143,16 +150,19 @@ namespace SPAFrontend
                     }
                     else if (line.Contains(";") && !line.Contains("}"))
                     {
-                        string rownumNumber = line.Split(' ')[0].Trim('.');
+                        string rownumNumber = counter.ToString();
+                        counter++;
 
-                        if (currentPath.Equals("$.procedure.stmtList"))
+                        lineWithNumber = rownumNumber.ToString() + ". " + line;
+
+                        if (currentPath.Equals($"$.procedure-{procedureCounter}.stmtList"))
                         {
                             ungroupedChildren.Add(new ExpressionModel(StatementType.ASSIGN, Int32.Parse(rownumNumber)));
                         }
 
                         var rownum = CreateObjectForPath(currentPath + $".assignment-{rownumNumber}.rownum", (rownumNumber));
                         final.Merge(rownum);
-                        var variable = CreateObjectForPath(currentPath + $".assignment-{rownumNumber}.variable", (line.Split(' ')[1].Split('=')[0].Trim()));
+                        var variable = CreateObjectForPath(currentPath + $".assignment-{rownumNumber}.variable", (lineWithNumber.Split(' ')[1].Split('=')[0].Trim()));
                         final.Merge(variable);
 
                         string[] stmtTypePath = currentPath.Substring(0, currentPath.LastIndexOf('.')).Split('.');
@@ -196,22 +206,24 @@ namespace SPAFrontend
                         }
 
                         ParseAssignment(pkb,
-                            line.Split(' ')[0] + " " + line.Remove(0, line.Split('.')[0].Length + 2).Replace(";", "").Replace(" ", ""),
+                            lineWithNumber.Split(' ')[0] + " " + lineWithNumber.Remove(0, lineWithNumber.Split('.')[0].Length + 2).Replace(";", "").Replace(" ", ""),
                             final,
                             currentPath + $".assignment-{rownumNumber}.value");
                     }
                     else
                     {
-                        string rownumNumber = line.Split(' ')[0].Trim('.');
+                        string rownumNumber = counter.ToString();
+                        counter++;
 
-                        if (currentPath.Equals("$.procedure.stmtList"))
+                        if (currentPath.Equals($"$.procedure-{procedureCounter}.stmtList"))
                         {
                             ungroupedChildren.Add(new ExpressionModel(StatementType.ASSIGN, Int32.Parse(rownumNumber)));
                         }
 
+                        lineWithNumber = rownumNumber + ". " + line;
                         var rownum = CreateObjectForPath(currentPath + $".assignment-{rownumNumber}.rownum", (rownumNumber));
                         final.Merge(rownum);
-                        var variable = CreateObjectForPath(currentPath + $".assignment-{rownumNumber}.variable", (line.Split(' ')[1].Split('=')[0].Trim()));
+                        var variable = CreateObjectForPath(currentPath + $".assignment-{rownumNumber}.variable", (lineWithNumber.Split(' ')[1].Split('=')[0].Trim()));
                         final.Merge(variable);
 
                         string[] stmtTypePath = currentPath.Substring(0, currentPath.LastIndexOf('.')).Split('.');
@@ -254,7 +266,7 @@ namespace SPAFrontend
                             }
                         }
 
-                        ParseAssignment(pkb, line.Split(' ')[0] + " " + line.Remove(0, line.Split('.')[0].Length + 2).Replace("}", "").Replace(" ", "").Replace(";", ""), final, currentPath + $".assignment-{rownumNumber}.value");
+                        ParseAssignment(pkb, lineWithNumber.Split(' ')[0] + " " + lineWithNumber.Remove(0, lineWithNumber.Split('.')[0].Length + 2).Replace("}", "").Replace(" ", "").Replace(";", ""), final, currentPath + $".assignment-{rownumNumber}.value");
 
                         for (int i = 0; i < line.Length - line.Replace("}", "").Length; i++)
                         {
@@ -298,45 +310,39 @@ namespace SPAFrontend
                 }
             }
 
-            //setFollows (group by parent, then get all previous children of each child)
+            //setFollows (group by parent, then get previous children of each child)
             var tmpParents = pkb.ParentList.GetRange(0, pkb.ParentList.Count);
             var tmpChildren = tmpParents.Select(x => x.Child);
             var groupedParents = tmpParents.GroupBy(x => x.Parent.Line).Select(g => g.FirstOrDefault().Parent).ToList();
-            List<ExpressionModel> children = new List<ExpressionModel>();
+            var children = new List<ExpressionModel>();
 
             foreach (var x in groupedParents)
             {
                 children = new List<ExpressionModel>();
                 foreach (var y in tmpParents)
                 {
-                    if(y.Parent.Line == x.Line)
+                    if (y.Parent.Line == x.Line)
                     {
                         children.Add(y.Child);
                     }
                 }
 
                 if (children.Count > 1)
-                    for (int i = 0; i < children.Count; i++)
+                    for (int i = 0; i < children.Count - 1; i++)
                     {
-                        for (int j = i + 1; j < children.Count; j++)
-                        {
-                            PKBParserServices.SetFollows(pkb,
-                                    children[i],
-                                    children[j]);
-                        }
+                        PKBParserServices.SetFollows(pkb,
+                                children[i],
+                                children[i + 1]);
                     }
             }
 
             //need to remember to handle ungrouped childen (their parent is default scope)
             if (ungroupedChildren.Count > 1)
-                for (int i = 0; i < ungroupedChildren.Count; i++)
+                for (int i = 0; i < ungroupedChildren.Count - 1; i++)
                 {
-                    for (int j = i + 1; j < ungroupedChildren.Count; j++)
-                    {
-                        PKBParserServices.SetFollows(pkb,
-                                ungroupedChildren[i],
-                                ungroupedChildren[j]);
-                    }
+                    PKBParserServices.SetFollows(pkb,
+                            ungroupedChildren[i],
+                            ungroupedChildren[i + 1]);
                 }
 
             Console.WriteLine(pkb.ToString());
@@ -473,7 +479,6 @@ namespace SPAFrontend
                             break;
                     }
                 }
-
             }
 
             return parsedAssignment;
