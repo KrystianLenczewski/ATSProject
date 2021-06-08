@@ -623,7 +623,11 @@ namespace QueryProcessor.QueryProcessing
             }
             else if (_candidates.ContainsKey(arg1.Name))
             {
-                List<string> result = _pkbStore.GetModified(arg2.Value).Select(s => s.ProgramLine.ToString()).ToList();
+                List<string> result = new List<string>();
+                if (int.TryParse(arg2.Value, out int progLine)) 
+                    result = _pkbStore.GetModified(progLine).Select(s => s.ProgramLine.ToString()).ToList();
+                else
+                    result = _pkbStore.GetModified(arg2.Value, ExpressionType.PROCEDURE).Select(s => s.ProgramLine.ToString()).ToList();// do zamiany metoda GetModified
                 foreach (string arg1Line in result)
                     _resultTable.AddRelationResult(arg1.Name, arg1Line);
 
@@ -646,7 +650,11 @@ namespace QueryProcessor.QueryProcessing
             }
             else
             {
-                List<string> result = _pkbStore.GetModifies(int.Parse(arg1.Value)).ToList();
+                List<string> result = new List<string>();
+                if (int.TryParse(arg1.Value, out int progLine))
+                    result = _pkbStore.GetModifies(progLine).ToList();
+                else
+                    result = _pkbStore.GetModifies(arg1.Value).ToList();
                 if (!result.Contains(arg2.Value))
                     _resultTable.SetFalseBoolResult();
             }
