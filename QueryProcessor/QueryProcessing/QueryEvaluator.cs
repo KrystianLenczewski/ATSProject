@@ -640,7 +640,7 @@ namespace QueryProcessor.QueryProcessing
             {
                 List<string> result = result = _pkbStore.GetModified(arg2.Value, ExpressionType.NULL).Select(s => s.ProgramLine.ToString()).ToList();
                 if(arg1.RelationArgumentType == RelationArgumentType.Procedure)
-                    result = _pkbStore.GetModified(arg2.Value).ToList();
+                    result = _pkbStore.GetModifiedProcedures(arg2.Value).ToList();
                 foreach (string arg1Line in result)
                     _resultTable.AddRelationResult(arg1.Name, arg1Line);
 
@@ -703,7 +703,7 @@ namespace QueryProcessor.QueryProcessing
             {
                 List<string> result = _pkbStore.GetUses(arg2.Value, ExpressionType.NULL).Select(s => s.ProgramLine.ToString()).ToList();
                 if(arg1.RelationArgumentType == RelationArgumentType.Procedure)
-                    result = _pkbStore.GetUses(arg2.Value).ToList(); // dla procedur - dokończyc
+                    result = _pkbStore.GetUsesProcedures(arg2.Value).ToList(); // dla procedur - dokończyc
                 foreach (string arg1Line in result)
                     _resultTable.AddRelationResult(arg1.Name, arg1Line);
 
