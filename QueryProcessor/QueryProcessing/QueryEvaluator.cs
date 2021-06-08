@@ -14,55 +14,55 @@ namespace QueryProcessor.QueryProcessing
     public class QueryEvaluator
     {
         private readonly PKBStore _pkbStore;
+        private readonly ResultProcessor _resultProcessor;
 
         public QueryEvaluator()
         {
             //_pkbStore = PKBStore.Instance;
+            //_resultProcessor = new ResultProcessor(_pkbStore);
         }
 
-        public List<object> GetQueryResultsRaw(QueryTree queryTree)
+        public string GetQueryResultsRaw(QueryTree queryTree)
         {
             queryTree.PrepareTreeForQueryEvaluator();
             List<RelationNode> relationNodes = queryTree.GetRelationNodes();
             List<SynonimNode> resultChildrens = queryTree.GetResultNodeChildrens();
 
             bool isResultBoolean = queryTree.IsResultBoolean();
-            List<object> results = HandleRelations(relationNodes, isResultBoolean, resultChildrens.FirstOrDefault());
+            HandleRelations(relationNodes, isResultBoolean, resultChildrens.FirstOrDefault());
 
-            return results;
-
-
+            return _resultProcessor.GetResult(resultChildrens.Select(s=>s.SynonimType).ToArray());
         }
 
-        private List<object> HandleRelations(List<RelationNode> relationNodes, bool isResultBoolean, SynonimNode resultSynonim)
+        private void HandleRelations(List<RelationNode> relationNodes, bool isResultBoolean, SynonimNode resultSynonim)
         {
-            List<object> results = new List<object>();
-
             foreach (RelationNode item in relationNodes)
             {
                 switch (item.RelationType)
                 {
                     case RelationType.MODIFIES:
-                        results.Add(GetModifies(item, isResultBoolean, resultSynonim));
+                        HandleModifies(item, isResultBoolean, resultSynonim);
                         break;
                     case RelationType.FOLLOWS:
-                        results.Add(GetFollows(item, isResultBoolean, resultSynonim));
+                        HandleFollows(item, isResultBoolean, resultSynonim);
                         break;
                     case RelationType.FOLLOWS_STAR:
-                        results.Add(GetFollowStar(item, isResultBoolean, resultSynonim));
+                        HandleFollowStar(item, isResultBoolean, resultSynonim);
+                        break;
+                    case RelationType.CALLS:
+                        HandleCalls(item, isResultBoolean, resultSynonim);
+                        break;
+                    case RelationType.CALLS_STAR:
+                        HandleCallsStar(item, isResultBoolean, resultSynonim);
                         break;
                     default:
                         break;
                 }
                 //Modifies(s1,s2)
-
-
             }
-            return results;
-
         }
 
-        private object GetModifies(RelationNode relationNode, bool isResultBoolean, SynonimNode resultChildren)
+        private void HandleModifies(RelationNode relationNode, bool isResultBoolean, SynonimNode resultChildren)
         {
 
             if (isResultBoolean)
@@ -72,12 +72,12 @@ namespace QueryProcessor.QueryProcessing
                 {
 
                     Statement statement = IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[0]);
-                    return _pkbStore.IsModified(variable, statement);
+                    // _resultProcessor.AddRelationResult(_pkbStore.IsModified(variable, statement));
                 }
                 else
                 {
                     Procedure procedure = IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[0]);
-                    return _pkbStore.IsModified(variable, procedure);
+                    // _resultProcessor.AddRelationResult(_pkbStore.IsModified(variable, procedure));
                 }
 
             }
@@ -85,64 +85,113 @@ namespace QueryProcessor.QueryProcessing
             {
                 if (resultChildren.SynonimType == SynonimType.Variable && relationNode.Arguments[0].IsStatement())
                 {
-                    return _pkbStore.GetModified(IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[0]));
+                    // List<Variable> variables = _pkbStore.GetModified(IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[0]));
+                    // _resultProcessor.AddRelationResult(SynonimType.Variable, variables);
                 }
                 else if (resultChildren.SynonimType == SynonimType.Variable && relationNode.Arguments[0].RelationArgumentType == RelationArgumentType.Procedure)
                 {
-                    return _pkbStore.GetModified(IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[0]));
+                    // List<Variable> variables = _pkbStore.GetModified(IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[0]));
+                    // _resultProcessor.AddRelationResult(SynonimType.Variable, variables);
                 }
                 else if (resultChildren.IsStamement() && (relationNode.Arguments[1].RelationArgumentType == RelationArgumentType.Variable ||
                     relationNode.Arguments[1].RelationArgumentType == RelationArgumentType.String))
                 {
-                    return _pkbStore.GetModifiesStatements(IntegrationModelCreator.CreateVariableForArgumentNode(relationNode.Arguments[1]));
+                    // List<Statement> statements = _pkbStore.GetModifiesStatements(IntegrationModelCreator.CreateVariableForArgumentNode(relationNode.Arguments[1]));
+                    // _resultProcessor.AddRelationResult(SynonimType.Statement, statements);
                 }
                 else if (resultChildren.SynonimType == SynonimType.Procedure && (relationNode.Arguments[1].RelationArgumentType == RelationArgumentType.Variable ||
                     relationNode.Arguments[1].RelationArgumentType == RelationArgumentType.String))
                 {
-                    return _pkbStore.GetModifiesProcedures(IntegrationModelCreator.CreateVariableForArgumentNode(relationNode.Arguments[1]));
+                    // List<Procedure> procedures = _pkbStore.GetModifiesProcedures(IntegrationModelCreator.CreateVariableForArgumentNode(relationNode.Arguments[1]));
+                    // _resultProcessor.AddRelationResult(SynonimType.Procedure, procedures);
                 }
 
             }
-
-            return new List<Statement>();
-
         }
 
-        private object GetFollows(RelationNode relationNode, bool isResultBoolean, SynonimNode resultChildren)
+        private void HandleFollows(RelationNode relationNode, bool isResultBoolean, SynonimNode resultChildren)
         {
             if (isResultBoolean)
             {
                 Statement stmt1 = IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[0]);
                 Statement stmt2 = IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[1]);
-                return _pkbStore.IsFollows(stmt1, stmt2);
+                // _resultProcessor.AddRelationResult(_pkbStore.IsFollows(stmt1, stmt2));
             }
             else
             {
                 if (relationNode.Arguments[1].RelationArgumentType == RelationArgumentType.Integer)
                 {
-                    return _pkbStore.GetFollows(IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[1]));
+                    // Statement statement = _pkbStore.GetFollows(IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[1]));
+                    // _resultProcessor.AddRelationResult(SynonimType.Statement, new List<Statement> { statement });
                 }
                 else if (relationNode.Arguments[0].RelationArgumentType == RelationArgumentType.Integer)
                 {
-                    return _pkbStore.GetFollowed(IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[0]));
+                    // Statement statement = _pkbStore.GetFollowed(IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[0]));
+                    // _resultProcessor.AddRelationResult(SynonimType.Statement, new List<Statement> { statement });
                 }
-
             }
-            return null;
         }
 
-        private object GetFollowStar(RelationNode relationNode, bool isResultBoolean, SynonimNode resultChildren)
+        private void HandleFollowStar(RelationNode relationNode, bool isResultBoolean, SynonimNode resultChildren)
         {
             if (relationNode.Arguments[1].RelationArgumentType == RelationArgumentType.Integer)
             {
-                return _pkbStore.GetFollowsStar(IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[1]));
+                // List<Statement> statements = _pkbStore.GetFollowsStar(IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[1]));
+                // _resultProcessor.AddRelationResult(SynonimType.Statement, statements);
             }
             else if (relationNode.Arguments[0].RelationArgumentType == RelationArgumentType.Integer)
             {
-                return _pkbStore.GetFollowedStar(IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[0]));
+                // List<Statement> statements = _pkbStore.GetFollowedStar(IntegrationModelCreator.CreateStatementForArgumentNode(relationNode.Arguments[0]));
+                // _resultProcessor.AddRelationResult(SynonimType.Statement, statements);
             }
-            return null;
         }
+
+        private void HandleCalls(RelationNode relationNode, bool isResultBoolean, SynonimNode resultChildren)
+        {
+            if (isResultBoolean)
+            {
+                Procedure proc1 = IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[0]);
+                Procedure proc2 = IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[1]);
+                _resultProcessor.AddRelationResult(_pkbStore.IsCalls(proc1, proc2));
+            }
+            else
+            {
+                if (relationNode.Arguments[1].RelationArgumentType == RelationArgumentType.Procedure)
+                {
+                    List<Procedure> procedures = _pkbStore.GetCalls(IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[1]));
+                    _resultProcessor.AddRelationResult(SynonimType.Procedure, procedures);
+                }
+                else if (relationNode.Arguments[0].RelationArgumentType == RelationArgumentType.Procedure)
+                {
+                    List<Procedure> procedures = _pkbStore.GetCalledFrom(IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[0]));
+                    _resultProcessor.AddRelationResult(SynonimType.Procedure, procedures);
+                }
+            }
+        }
+
+        private void HandleCallsStar(RelationNode relationNode, bool isResultBoolean, SynonimNode resultChildren)
+        {
+            if (isResultBoolean)
+            {
+                Procedure proc1 = IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[0]);
+                Procedure proc2 = IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[1]);
+                _resultProcessor.AddRelationResult(_pkbStore.IsCallsStar(proc1, proc2));
+            }
+            else
+            {
+                if (relationNode.Arguments[1].RelationArgumentType == RelationArgumentType.Procedure)
+                {
+                    List<Procedure> procedures = _pkbStore.GetCallsStar(IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[1]));
+                    _resultProcessor.AddRelationResult(SynonimType.Procedure, procedures);
+                }
+                else if (relationNode.Arguments[0].RelationArgumentType == RelationArgumentType.Procedure)
+                {
+                    List<Procedure> procedures = _pkbStore.GetCalledStarFrom(IntegrationModelCreator.CreateProcedureForArgumentNode(relationNode.Arguments[0]));
+                    _resultProcessor.AddRelationResult(SynonimType.Procedure, procedures);
+                }
+            }         
+        }
+
     }
 
     //zwracala varset, stmtset,

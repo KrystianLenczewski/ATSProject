@@ -14,5 +14,7 @@ namespace QueryProcessor.Enums
         FOLLOWS_STAR,
         CALLS,
         CALLS_STAR,
+        NEXT,
+        NEXT_STAR
     }
 }

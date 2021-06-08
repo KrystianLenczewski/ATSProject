@@ -31,7 +31,7 @@ namespace QueryProcessor.QueryProcessing
                 this.validationErrors = validationErrors;
                 throw new Exception("Zapytanie PQL jest nieprawidłowe.");
             }
-                
+
         }
 
         public List<string> GetValidationErrors()
@@ -43,31 +43,38 @@ namespace QueryProcessor.QueryProcessing
         {
             List<string> splitedQuery = query.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
             splitedQuery.ForEach(x => x.Trim().ToLower());
-            int suchThatIndex = GetIndexForSuchThat(splitedQuery);
-
-            if(suchThatIndex != -1)
+            int suchThatIndex = GetIndexForSuchThat(splitedQuery);          
+            
+            if (suchThatIndex != -1)
             {
                 SectionNode relationSectionNode = new SectionNode() { NodeType = NodeType.SUCH_THAT };
                 int endSuchThat = GetSuchThatEndIndex(splitedQuery);
-                for (int i = suchThatIndex + 1; i < endSuchThat; i += 2)
+
+                // 'i' wskazuje na pierwsza i kolejne czesci SUCH_THAT po AND lub spowoduje wyjscie z petli                
+                for (int i = suchThatIndex + 1; i < endSuchThat; i += 3)
                 {
                     RelationType relationType = _relTable.GetRelationType(splitedQuery[i]);
                     RelationNode relationNode = new RelationNode() { RelationType = relationType };
                     relationSectionNode.Childrens.Add(relationNode);
                     List<string> relationArguments = splitedQuery[i + 1].Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
-
-                    foreach (string relationArgument in relationArguments)
-                    {
-                        string relationArgumentName = relationArgument.Replace("(", "").Replace(")", "");
-                        RelationArgumentType relationArgumentType = _symbolTable.GetRelationArgumentType(relationArgumentName);
-                        ArgumentNode argumentNode = new ArgumentNode(relationArgumentType, relationArgumentName);
-                        relationNode.Arguments.Add(argumentNode);
-                    }
+                    AddArgumentsToRelationNode(relationNode, relationArguments);
                 }
+
                 return relationSectionNode;
             }
 
             return null;
+        }
+
+        private void AddArgumentsToRelationNode(RelationNode relationNode, List<string> relationArguments)
+        {
+            foreach (string relationArgument in relationArguments)
+            {
+                string relationArgumentName = relationArgument.Replace("(", "").Replace(")", "");
+                RelationArgumentType relationArgumentType = _symbolTable.GetRelationArgumentType(relationArgumentName);
+                ArgumentNode argumentNode = new ArgumentNode(relationArgumentType, relationArgumentName);
+                relationNode.Arguments.Add(argumentNode);
+            }
         }
 
         private SectionNode ExtractResult(string query)
@@ -78,6 +85,7 @@ namespace QueryProcessor.QueryProcessing
 
             List<string> resultSymbols = splitedQuery[selectIndex + 1].Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
             SectionNode resultNode = new SectionNode { NodeType = NodeType.RESULT };
+
             foreach (var symbolName in resultSymbols)
             {
                 SynonimType synonimType = _symbolTable.GetSynonimType(symbolName);
@@ -95,31 +103,46 @@ namespace QueryProcessor.QueryProcessing
             int patternIndex = splitedQuery.IndexOf(QueryElement.Pattern.ToLower());
             int endWith = patternIndex == -1 ? splitedQuery.Count : patternIndex;
 
-            if (withIndex + 1 != endWith && withIndex!=-1)
+            if (withIndex + 1 != endWith && withIndex != -1)
             {
-                string withCondition = splitedQuery[withIndex + 1];
-                List<string> splittedWithCondition = withCondition.Split('=', StringSplitOptions.RemoveEmptyEntries).ToList();
-                string leftSide = splittedWithCondition[0];
-                string rightSide = splittedWithCondition[1];
-
                 SectionNode withNode = new SectionNode { NodeType = NodeType.WITH };
-                string[] splittedLeftSide = leftSide.Split('.', StringSplitOptions.RemoveEmptyEntries);
-                SynonimNode leftSideSynonimNode = new SynonimNode(_symbolTable.GetSynonimType(splittedLeftSide[0]), splittedLeftSide[0]);
-                AttributeNode leftSideAttributeNode;
-                if (IsConst(rightSide))
-                    leftSideAttributeNode = new AttributeNode(splittedLeftSide[1], rightSide, leftSideSynonimNode);
-                else
+
+                //dziala z dodawaniem AND, index przechodzi wskazujac na kolejne 'withCondition' (np. p.procName="abc") i wychodzi z petli po wszystkich elementach zlaczonych poprzez AND
+                for (int i = withIndex + 1; i < endWith; i += 2)
                 {
-                    string[] splittedRigtSide = rightSide.Split('.', StringSplitOptions.RemoveEmptyEntries);
-                    SynonimNode rightSideSynonimNode = new SynonimNode(_symbolTable.GetSynonimType(splittedRigtSide[0]), splittedRigtSide[0]);
-                    AttributeNode rightSideAttributeNode = new AttributeNode(splittedRigtSide[1], rightSideSynonimNode);
-                    leftSideAttributeNode = new AttributeNode(splittedLeftSide[1], rightSideAttributeNode, leftSideSynonimNode);
-                    rightSideAttributeNode.AttributeValue = leftSideAttributeNode;
+                    string withCondition = splitedQuery[i];
+                    AttributeNode attributeNode = GetAttributeNodeForWithCondition(withCondition);
+                    withNode.Childrens.Add(attributeNode);
                 }
-                withNode.Childrens.Add(leftSideAttributeNode);
-                return withNode;
+
+                return withNode;                
+
             }
             else return null;
+        }
+
+
+
+        private AttributeNode GetAttributeNodeForWithCondition(string withCondition)
+        {
+            List<string> splittedWithCondition = withCondition.Split('=', StringSplitOptions.RemoveEmptyEntries).ToList();
+            string leftSide = splittedWithCondition[0];
+            string rightSide = splittedWithCondition[1];
+
+            string[] splittedLeftSide = leftSide.Split('.', StringSplitOptions.RemoveEmptyEntries);
+            SynonimNode leftSideSynonimNode = new SynonimNode(_symbolTable.GetSynonimType(splittedLeftSide[0]), splittedLeftSide[0]);
+            AttributeNode leftSideAttributeNode;
+            if (IsConst(rightSide))
+                leftSideAttributeNode = new AttributeNode(splittedLeftSide[1], rightSide, leftSideSynonimNode);
+            else
+            {
+                string[] splittedRigtSide = rightSide.Split('.', StringSplitOptions.RemoveEmptyEntries);
+                SynonimNode rightSideSynonimNode = new SynonimNode(_symbolTable.GetSynonimType(splittedRigtSide[0]), splittedRigtSide[0]);
+                AttributeNode rightSideAttributeNode = new AttributeNode(splittedRigtSide[1], rightSideSynonimNode);
+                leftSideAttributeNode = new AttributeNode(splittedLeftSide[1], rightSideAttributeNode, leftSideSynonimNode);
+                rightSideAttributeNode.AttributeValue = leftSideAttributeNode;
+            }
+            return leftSideAttributeNode;
         }
 
         private int GetIndexForSuchThat(List<string> splittedQuery)
