@@ -25,6 +25,21 @@ namespace QueryProcessor.QueryProcessing
             _pkbStore = pkbStore;
         }
 
+        public string GetQueryResultsRawPipeTester(QueryTree queryTree)
+        {
+            PrepareCandidatesDictionary(queryTree.GetDeclarations() ?? new Dictionary<string, RelationArgumentType>());
+            _resultTable = new ResultTable(queryTree.GetDeclarations().Keys.ToList() ?? new List<string>());
+
+            List<RelationNode> relations = queryTree.GetRelationNodes();
+            HandleRelations(relations);
+            List<string> resultSynonimNames = queryTree.GetResultNodeChildrens().Select(s => s.Name).ToList();
+            ApplyWithRestrictions(queryTree.GetAttributeNodes());
+
+            if (resultSynonimNames.FirstOrDefault()?.ToLower() == "boolean".ToLower())
+                return _resultTable.GetBooleanResult().ToString();
+            return _resultTable.GetResultPipeTesterFormat(_candidates, resultSynonimNames.ToArray());
+        }
+
         public List<string> GetQueryResultsRaw(QueryTree queryTree)
         {
             PrepareCandidatesDictionary(queryTree.GetDeclarations() ?? new Dictionary<string, RelationArgumentType>());
@@ -623,7 +638,9 @@ namespace QueryProcessor.QueryProcessing
             }
             else if (_candidates.ContainsKey(arg1.Name))
             {
-                List<string> result = _pkbStore.GetModified(arg2.Value).Select(s => s.ProgramLine.ToString()).ToList();
+                List<string> result = result = _pkbStore.GetModified(arg2.Value).Select(s => s.ProgramLine.ToString()).ToList();
+                if(arg1.RelationArgumentType == RelationArgumentType.Procedure)
+                    result = _pkbStore.GetModified(arg2.Value).Select(s => s.ProgramLine.ToString()).ToList(); //dla procedur - dokończyc
                 foreach (string arg1Line in result)
                     _resultTable.AddRelationResult(arg1.Name, arg1Line);
 
@@ -632,7 +649,12 @@ namespace QueryProcessor.QueryProcessing
             }
             else if (_candidates.ContainsKey(arg2.Name))
             {
-                List<string> result = _pkbStore.GetModifies(arg1.Value).ToList();
+
+                List<string> result = new List<string>();
+                if (arg1.RelationArgumentType == RelationArgumentType.Integer)
+                    result = _pkbStore.GetModifies(Convert.ToInt32(arg1.Value)).ToList();
+                else
+                    result = _pkbStore.GetModifies(arg1.Value).ToList();
                 foreach (string arg2Line in result)
                     _resultTable.AddRelationResult(arg2.Name, arg2Line);
 
@@ -641,7 +663,11 @@ namespace QueryProcessor.QueryProcessing
             }
             else
             {
-                List<string> result = _pkbStore.GetModifies(int.Parse(arg1.Value)).ToList();
+                List<string> result = new List<string>();
+                if (int.TryParse(arg1.Value, out int progLine))
+                    result = _pkbStore.GetModifies(progLine).ToList();
+                else
+                    result = _pkbStore.GetModifies(arg1.Value).ToList();
                 if (!result.Contains(arg2.Value))
                     _resultTable.SetFalseBoolResult();
             }
@@ -676,6 +702,8 @@ namespace QueryProcessor.QueryProcessing
             else if (_candidates.ContainsKey(arg1.Name))
             {
                 List<string> result = _pkbStore.GetUses(arg2.Value).Select(s => s.ProgramLine.ToString()).ToList();
+                if(arg1.RelationArgumentType == RelationArgumentType.Procedure)
+                    result = _pkbStore.GetUses(arg2.Value).Select(s => s.ProgramLine.ToString()).ToList(); // dla procedur - dokończyc
                 foreach (string arg1Line in result)
                     _resultTable.AddRelationResult(arg1.Name, arg1Line);
 

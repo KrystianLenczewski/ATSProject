@@ -18,6 +18,30 @@ namespace QueryProcessor.ResultGeneration
             _declaredSynonims = declaredSynonims.Where(w=>!w.Equals("boolean", StringComparison.OrdinalIgnoreCase)).ToList();
         }
 
+        public string GetResultPipeTesterFormat(Dictionary<string, List<string>> candidates, params string[] synonimNames)
+        {
+            List<string> newResult = new List<string>();
+            List<string> oldFormatResult = GetResult(candidates, synonimNames);
+
+            foreach(string oldFormatRow in oldFormatResult)
+            {
+                List<string> currentNewResult = new List<string> { "" };
+                var synonimsWithValue = oldFormatRow.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach(var synonimWithValue in synonimsWithValue)
+                {
+                    var synonimValue = synonimWithValue.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (synonimValue[1].Count() == 1)
+                        AddForSimpleValue(synonimValue[1], currentNewResult);
+                    else
+                        currentNewResult = AddForComplexValue(synonimValue[1], currentNewResult);
+                }
+
+                newResult.AddRange(currentNewResult);
+            }
+
+            return string.Join(", ", newResult);
+        }
+
         public List<string> GetResult(Dictionary<string, List<string>> candidates, params string[] synonimNames)
         {
             List<string> result = new List<string>();
@@ -114,7 +138,8 @@ namespace QueryProcessor.ResultGeneration
 
         public bool GetBooleanResult()
         {
-            return _boolResult && _resultTableRows.Any();
+            return _boolResult; 
+                //_resultTableRows.Any();
         }
 
         private bool ExistsResult(string firstSynonimName, string firstSynonimValue, string secondSynonimName = "", string secondSynonimValue = "")
@@ -164,6 +189,37 @@ namespace QueryProcessor.ResultGeneration
                 }
                 if (!existsInResult)
                     result.Add(row);
+            }
+
+            return result;
+        }
+
+        private void AddForSimpleValue(string value, List<string> currentNewResult)
+        {
+            for (int i = 0; i < currentNewResult.Count; i++)
+            {
+                if (!string.IsNullOrEmpty(currentNewResult[i]))
+                    currentNewResult[i] += value.ToString();
+                else
+                    currentNewResult[i] +=$" {value}";
+            }
+        }
+
+        private List<string> AddForComplexValue(string value, List<string> currentNewResult)
+        {
+            value = value.Replace("[", "").Replace("]", "");
+            var splittedValues = value.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            List<string> result = new List<string>();
+
+            foreach(var progLine in splittedValues)
+            {
+                foreach(string currentResultRow in currentNewResult)
+                {
+                    if (!string.IsNullOrEmpty(currentResultRow))
+                        result.Add(progLine);
+                    else
+                        result.Add($"{currentResultRow} {progLine}");
+                }
             }
 
             return result;
