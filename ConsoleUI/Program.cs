@@ -5,6 +5,10 @@ using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using PKB;
 using SPAFrontend;
+using QueryProcessor;
+using QueryProcessor.Moqs;
+using QueryProcessor.QueryProcessing;
+using QueryProcessor.ResultGeneration;
 
 namespace ConsoleUI
 {
@@ -28,13 +32,28 @@ namespace ConsoleUI
                 var pkb = serviceProvider.GetService<IPKBStore>();
                 pkb.ParseCode(text);
                 pkb.Extract(pkb.ModifiesList);
-                Console.WriteLine("Ready");
+
                 while (true)
                 {
                     var declarations = Console.ReadLine(); // example: stmt s;
                     var command = Console.ReadLine(); // example: Select s such that Modifies(s,"x")
-                    // var result = TODO4: wyszukiwarka PQL, return: lista odpowiedzi (List<string>) lub string z odpowiedziami, argumenty wejściowe (this PKB pkb, string declarations, string command)
-                    Console.WriteLine("result"); // tutaj do wypisania result TODO5
+
+                    try
+                    {
+                        var queryPreprocessor = new QueryPreprocessor();
+                        string query = declarations.ToString() + " " + command.ToString();
+
+                        QueryTree queryTree = queryPreprocessor.ParseQuery(query);
+                        QueryEvaluator queryEvaluator = new QueryEvaluator(PKBInitializer.InitializePKB());
+
+                        var result = queryEvaluator.GetQueryResultsRaw(queryTree);
+
+                        Console.WriteLine(result);
+                    }
+                    catch(Exception ex)
+                    {
+                        Console.WriteLine("#" + ex.Message);
+                    }                    
                 }
             }
         }
