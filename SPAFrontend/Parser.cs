@@ -56,7 +56,7 @@ namespace SPAFrontend
                             if (drp != null)
                             {
                                 PKBParserServices.SetParent(pkb,
-                                    new ExpressionModel(SpecialType.STMTLST, drp.rownum),
+                                    new ExpressionModel(StatementType.IF, drp.rownum),
                                     new ExpressionModel(StatementType.WHILE, Int32.Parse(rownum)),
                                     0);
                             }
@@ -110,7 +110,7 @@ namespace SPAFrontend
                             if (drp != null)
                             {
                                 PKBParserServices.SetParent(pkb,
-                                    new ExpressionModel(SpecialType.STMTLST, drp.rownum),
+                                    new ExpressionModel(StatementType.IF, drp.rownum),
                                     new ExpressionModel(StatementType.WHILE, Int32.Parse(rownum)),
                                     0);
                             }
@@ -177,7 +177,7 @@ namespace SPAFrontend
                             Int32.TryParse(rownumNumber.ToString(), out int rn2))
                         {
                             PKBParserServices.SetParent(pkb,
-                                new ExpressionModel(SpecialType.STMTLST, rnFPKB2),
+                                new ExpressionModel(StatementType.IF, rnFPKB2),
                                 new ExpressionModel(StatementType.ASSIGN, rn2),
                                 0);
                         }
@@ -189,7 +189,7 @@ namespace SPAFrontend
                             if (drp != null)
                             {
                                 PKBParserServices.SetParent(pkb,
-                                    new ExpressionModel(SpecialType.STMTLST, drp.rownum),
+                                    new ExpressionModel(StatementType.IF, drp.rownum),
                                     new ExpressionModel(StatementType.ASSIGN, rn3),
                                     0);
                             }
@@ -236,7 +236,7 @@ namespace SPAFrontend
                             Int32.TryParse(rownumNumber.ToString(), out int rn2))
                         {
                             PKBParserServices.SetParent(pkb,
-                                new ExpressionModel(SpecialType.STMTLST, rnFPKB2),
+                                new ExpressionModel(StatementType.IF, rnFPKB2),
                                 new ExpressionModel(StatementType.ASSIGN, rn2),
                                 0);
                         }
@@ -248,7 +248,7 @@ namespace SPAFrontend
                             Int32.TryParse(rownumNumber, out int rn3))
                             {
                                 PKBParserServices.SetParent(pkb,
-                                    new ExpressionModel(SpecialType.STMTLST, drp.rownum),
+                                    new ExpressionModel(StatementType.IF, drp.rownum),
                                     new ExpressionModel(StatementType.ASSIGN, rn3),
                                     0);
                             }
@@ -292,7 +292,7 @@ namespace SPAFrontend
             tmpUsesList = pkb.UsesList.GetRange(0, pkb.UsesList.Count);
             foreach (var item in tmpUsesList)
             {
-                if (item.Key.Type.Equals(ExpressionType.STMTLST))
+                if (item.Key.Type.Equals(StatementType.IF))
                 {
                     pkb.UsesList.Remove(item);
                 }
