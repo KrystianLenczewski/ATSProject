@@ -16,6 +16,7 @@ namespace PKB
         public List<string> ProcList { get; set; } = new List<string>();
         public List<string> VarList { get; set; } = new List<string>();
         public List<string> ConstList { get; set; } = new List<string>();
+        public List<ExpressionModel> AllStatements { get; set; } = new List<ExpressionModel>();
 
         public override string ToString()
         {
