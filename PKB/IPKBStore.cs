@@ -12,6 +12,7 @@ namespace PKB
         List<KeyValuePair<ExpressionModel, ExpressionModel>> AffectsList { get; set; }
         List<KeyValuePair<ExpressionModel, ExpressionModel>> CallsList { get; set; }
         List<ParentModel> ParentList { get; set; }
+        List<ExpressionModel> AllStatements { get; set; }
 
         List<string> ProcList { get; set; }
         List<string> VarList { get; set; }
