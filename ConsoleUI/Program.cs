@@ -50,7 +50,7 @@ namespace ConsoleUI
 
                         Console.WriteLine(result);
                     }
-                    catch(Exception ex)
+                    catch (Exception)
                     {
                         Console.WriteLine($"#{string.Join("\n", queryPreprocessor.GetValidationErrors())}");
                     }                    
