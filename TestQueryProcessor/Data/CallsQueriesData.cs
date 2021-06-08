@@ -26,8 +26,9 @@ namespace TestQueryProcessor.Data
             {
 
                 //KeyValuePair.Create("procedure p; select p such that Calls* (p,\"Triangle\")",  new List<string>{ "p:Circle ", "p:Rectangle "}),
-                KeyValuePair.Create("procedure p; select p such that Calls (\"Circle\",p) and Modifies (p,\"c\") and Uses (p,\"a\")",  new List<string>{ "p:Triangle ", "p:Rectangle "}),
-                KeyValuePair.Create("procedure p; select p such that Calls* (\"Circle\",p) and Modifies (p,\"c\")",  new List<string>{ "p:Triangle ", "p:Rectangle "}),
+               // KeyValuePair.Create("procedure p; Select p such that Calls (\"Circle\",p) and Modifies (p,\"c\") and Uses (p,\"a\")",  new List<string>{ "p:Triangle ", "p:Rectangle "}),
+                //KeyValuePair.Create("procedure p; select p such that Calls* (\"Circle\",p) and Modifies (p,\"c\")",  new List<string>{ "p:Triangle ", "p:Rectangle "}),
+                 KeyValuePair.Create("calls c; Select c",  new List<string>{ "p:Triangle ", "p:Rectangle "}),
 
             };
         }
