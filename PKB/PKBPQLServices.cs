@@ -128,7 +128,7 @@ namespace PKB
             return modified;
         }
 
-        public static IEnumerable<string> GetModified(this IPKBStore pkb, string varName)
+        public static IEnumerable<string> GetModifiedProcedures(this IPKBStore pkb, string varName)
         {
             var modified = pkb.ModifiesList
                 .Where(x => x.Value.Name == varName && x.Key.Type == ExpressionType.PROCEDURE)
@@ -160,7 +160,7 @@ namespace PKB
             return uses;
         }
 
-        public static IEnumerable<string> GetUses(this IPKBStore pkb, string name)
+        public static IEnumerable<string> GetUsesProcedures(this IPKBStore pkb, string name)
         {
             var uses = pkb.UsesList
                 .Where(x => x.Value.Name == name && x.Key.Type == ExpressionType.PROCEDURE)
