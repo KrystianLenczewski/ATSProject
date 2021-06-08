@@ -638,9 +638,9 @@ namespace QueryProcessor.QueryProcessing
             }
             else if (_candidates.ContainsKey(arg1.Name))
             {
-                List<string> result = result = _pkbStore.GetModified(arg2.Value).Select(s => s.ProgramLine.ToString()).ToList();
+                List<string> result = result = _pkbStore.GetModified(arg2.Value, ExpressionType.NULL).Select(s => s.ProgramLine.ToString()).ToList();
                 if(arg1.RelationArgumentType == RelationArgumentType.Procedure)
-                    result = _pkbStore.GetModified(arg2.Value).Select(s => s.ProgramLine.ToString()).ToList(); //dla procedur - dokończyc
+                    result = _pkbStore.GetModified(arg2.Value).ToList();
                 foreach (string arg1Line in result)
                     _resultTable.AddRelationResult(arg1.Name, arg1Line);
 
@@ -701,9 +701,9 @@ namespace QueryProcessor.QueryProcessing
             }
             else if (_candidates.ContainsKey(arg1.Name))
             {
-                List<string> result = _pkbStore.GetUses(arg2.Value).Select(s => s.ProgramLine.ToString()).ToList();
+                List<string> result = _pkbStore.GetUses(arg2.Value, ExpressionType.NULL).Select(s => s.ProgramLine.ToString()).ToList();
                 if(arg1.RelationArgumentType == RelationArgumentType.Procedure)
-                    result = _pkbStore.GetUses(arg2.Value).Select(s => s.ProgramLine.ToString()).ToList(); // dla procedur - dokończyc
+                    result = _pkbStore.GetUses(arg2.Value).ToList(); // dla procedur - dokończyc
                 foreach (string arg1Line in result)
                     _resultTable.AddRelationResult(arg1.Name, arg1Line);
 
