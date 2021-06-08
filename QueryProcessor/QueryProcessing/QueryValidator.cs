@@ -254,7 +254,13 @@ namespace QueryProcessor.QueryProcessing
             if (beginIndex == -1) validateErrors.Add("Brak klauzuli select w zapytaniu.");
             if (beginIndex + 1 == endIndex) validateErrors.Add("Brak wartości do zwrócenia(po select).");
 
+            string selectArgument = splitedQuery[beginIndex + 1];
+            char comma = ',';
+            int countCommas = selectArgument.Count(s => s == comma);
             List<string> resultSymbols = splitedQuery[beginIndex + 1].Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
+
+            if(countCommas + 1 != resultSymbols.Count) validateErrors.Add("Nieprawidłowe dane w klauzuli select (przecinki).");
+
             if (beginIndex + 2 < endIndex) validateErrors.Add("Nieprawidłowe dane w klauzuli select.");
 
             foreach (var symbol in resultSymbols)
