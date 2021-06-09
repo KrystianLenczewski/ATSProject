@@ -22,14 +22,13 @@ namespace ConsoleUI
             if (args.Length == 1)
             {
                 //string text = File.ReadAllText(args[0], Encoding.GetEncoding(852));
+                string text = File.ReadAllText("simple.txt", Encoding.GetEncoding(852));
+                var serviceProvider = new ServiceCollection()
+                    .AddSingleton<IPKBStore, PKBStore>()
+                    .BuildServiceProvider();
 
-                //var serviceProvider = new ServiceCollection()
-                //    .AddSingleton<IPKBStore, PKBStore>()
-                //    .BuildServiceProvider();
-
-                //var pkb = serviceProvider.GetService<IPKBStore>();
-                //pkb.ParseCode(text);
-                //pkb.Extract(pkb.ModifiesList);
+                var pkb = serviceProvider.GetService<IPKBStore>();
+                pkb.ParseCode(text);
 
                 Console.WriteLine("Ready");
 
@@ -44,7 +43,7 @@ namespace ConsoleUI
                         string query = declarations.ToString() + " " + command.ToString();
 
                         QueryTree queryTree = queryPreprocessor.ParseQuery(query);
-                        QueryEvaluator queryEvaluator = new QueryEvaluator(PKBInitializer.InitializePKB());
+                        QueryEvaluator queryEvaluator = new QueryEvaluator(pkb);
 
                         string result = queryEvaluator.GetQueryResultsRawPipeTester(queryTree);
 
