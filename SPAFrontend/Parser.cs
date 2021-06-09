@@ -16,6 +16,9 @@ namespace SPAFrontend
         {
             JObject final = new JObject();
             List<ExpressionModel> ungroupedChildren = new List<ExpressionModel>();
+            HashSet<KeyValuePair<ExpressionModel, ExpressionModel>> callsHolder = new HashSet<KeyValuePair<ExpressionModel, ExpressionModel>>(new ExpressionModelKeyPairComparer());
+            HashSet<string> varHolder = new HashSet<string>();
+            HashSet<string> constHolder = new HashSet<string>();
 
             using (StringReader reader = new StringReader(code))
             {
@@ -25,6 +28,7 @@ namespace SPAFrontend
                 int procedureCounter = 0;
                 string lineWithNumber = string.Empty;
                 List<DepthRownum> depthRownumPair = new List<DepthRownum>();
+                string parentProcedureHolder = string.Empty;
 
                 while ((line = reader.ReadLine()) != null)
                 {
@@ -38,6 +42,9 @@ namespace SPAFrontend
                         var obj = CreateObjectForPath(currentPath + ".name", (line.Split(' ')[1]));
                         final.Merge(obj);
                         currentPath += ".stmtList";
+
+                        parentProcedureHolder = line.Split(' ')[1];
+                        PKBParserServices.SetProcList(pkb, line.Split(' ')[1]);
                     }
                     else if (line.Contains("while"))
                     {
@@ -47,6 +54,10 @@ namespace SPAFrontend
                         PKBParserServices.SetUses(pkb,
                             new ExpressionModel(StatementType.WHILE, Int32.Parse(rownum)),
                             new ExpressionModel(FactorType.VAR, line.Split(' ')[2]));
+
+                        PKBParserServices.SetAllStatements(pkb, new ExpressionModel(StatementType.WHILE, Int32.Parse(rownum)));
+
+                        varHolder.Add(line.Split(' ')[1]);
 
                         if (currentPath.Equals($"$.procedure-{procedureCounter}.stmtList"))
                         {
@@ -76,7 +87,7 @@ namespace SPAFrontend
                         }
 
                         currentPath += $".while-{rownum}";
-                        var obj = CreateObjectForPath(currentPath + ".param", (line.Split(' ')[2]));
+                        var obj = CreateObjectForPath(currentPath + ".param", (line.Split(' ')[1]));
                         final.Merge(obj);
                         var obj2 = CreateObjectForPath(currentPath + ".rownum", (rownum));
                         final.Merge(obj2);
@@ -92,8 +103,34 @@ namespace SPAFrontend
                             ungroupedChildren.Add(new ExpressionModel(StatementType.CALL, Int32.Parse(rownum)));
                         }
 
+                        PKBParserServices.SetAllStatements(pkb, new ExpressionModel(StatementType.CALL, Int32.Parse(rownum)));
+
+                        string[] stmtTypePath = currentPath.Substring(0, currentPath.LastIndexOf('.')).Split('.');
+                        if (stmtTypePath[stmtTypePath.Length - 1].Contains("if") ||
+                            stmtTypePath[stmtTypePath.Length - 1].Contains("else"))
+                        {
+                            DepthRownum drp = depthRownumPair.Find(p => p.depth == currentPath.Split('.').Length);
+                            if (drp != null)
+                            {
+                                PKBParserServices.SetParent(pkb,
+                                    new ExpressionModel(SpecialType.STMTLST, drp.rownum),
+                                    new ExpressionModel(StatementType.CALL, Int32.Parse(rownum)),
+                                    0);
+                            }
+                        }
+                        else if (stmtTypePath[stmtTypePath.Length - 1].Contains("while") &&
+                            Int32.TryParse(stmtTypePath[stmtTypePath.Length - 1].Split('-')[1], out int rn))
+                        {
+                            PKBParserServices.SetParent(pkb,
+                                new ExpressionModel(StatementType.WHILE, rn),
+                                new ExpressionModel(StatementType.CALL, Int32.Parse(rownum)),
+                                0);
+                        }
+
+                        callsHolder.Add(KeyValuePair.Create(new ExpressionModel(WithNameType.PROCEDURE, parentProcedureHolder), new ExpressionModel(WithNameType.PROCEDURE, line.Split(' ')[1].Replace(";", string.Empty))));
+
                         currentPath += $".call-{rownum}";
-                        var obj = CreateObjectForPath(currentPath + ".param", (line.Split(' ')[1]));
+                        var obj = CreateObjectForPath(currentPath + ".param", line.Split(' ')[1].Replace(";", string.Empty));
                         final.Merge(obj);
                         var obj2 = CreateObjectForPath(currentPath + ".rownum", (rownum));
                         final.Merge(obj2);
@@ -108,6 +145,8 @@ namespace SPAFrontend
                         {
                             ungroupedChildren.Add(new ExpressionModel(StatementType.IF, Int32.Parse(rownum)));
                         }
+
+                        PKBParserServices.SetAllStatements(pkb, new ExpressionModel(StatementType.IF, Int32.Parse(rownum)));
 
                         string[] stmtTypePath = currentPath.Substring(0, currentPath.LastIndexOf('.')).Split('.');
                         if (stmtTypePath[stmtTypePath.Length - 1].Contains("if") ||
@@ -135,8 +174,10 @@ namespace SPAFrontend
                             new ExpressionModel(StatementType.IF, Int32.Parse(rownum)),
                             new ExpressionModel(FactorType.VAR, line.Split(' ')[2]));
 
+                        varHolder.Add(line.Split(' ')[1]);
+
                         currentPath += $".if-{rownum}";
-                        var obj = CreateObjectForPath(currentPath + ".param", (line.Split(' ')[2]));
+                        var obj = CreateObjectForPath(currentPath + ".param", (line.Split(' ')[1]));
                         final.Merge(obj);
                         var obj2 = CreateObjectForPath(currentPath + ".rownum", (rownum));
                         final.Merge(obj2);
@@ -159,6 +200,8 @@ namespace SPAFrontend
                         {
                             ungroupedChildren.Add(new ExpressionModel(StatementType.ASSIGN, Int32.Parse(rownumNumber)));
                         }
+
+                        PKBParserServices.SetAllStatements(pkb, new ExpressionModel(StatementType.ASSIGN, Int32.Parse(rownumNumber)));
 
                         var rownum = CreateObjectForPath(currentPath + $".assignment-{rownumNumber}.rownum", (rownumNumber));
                         final.Merge(rownum);
@@ -205,10 +248,12 @@ namespace SPAFrontend
                             }
                         }
 
-                        ParseAssignment(pkb,
+                        var tempAssignment = ParseAssignment(pkb,
                             lineWithNumber.Split(' ')[0] + " " + lineWithNumber.Remove(0, lineWithNumber.Split('.')[0].Length + 2).Replace(";", "").Replace(" ", ""),
                             final,
                             currentPath + $".assignment-{rownumNumber}.value");
+
+                        varHolder.UnionWith(tempAssignment.Item2);
                     }
                     else
                     {
@@ -219,6 +264,8 @@ namespace SPAFrontend
                         {
                             ungroupedChildren.Add(new ExpressionModel(StatementType.ASSIGN, Int32.Parse(rownumNumber)));
                         }
+
+                        PKBParserServices.SetAllStatements(pkb, new ExpressionModel(StatementType.ASSIGN, Int32.Parse(rownumNumber)));
 
                         lineWithNumber = rownumNumber + ". " + line;
                         var rownum = CreateObjectForPath(currentPath + $".assignment-{rownumNumber}.rownum", (rownumNumber));
@@ -266,7 +313,9 @@ namespace SPAFrontend
                             }
                         }
 
-                        ParseAssignment(pkb, lineWithNumber.Split(' ')[0] + " " + lineWithNumber.Remove(0, lineWithNumber.Split('.')[0].Length + 2).Replace("}", "").Replace(" ", "").Replace(";", ""), final, currentPath + $".assignment-{rownumNumber}.value");
+                        var tempAssignment = ParseAssignment(pkb, lineWithNumber.Split(' ')[0] + " " + lineWithNumber.Remove(0, lineWithNumber.Split('.')[0].Length + 2).Replace("}", "").Replace(" ", "").Replace(";", ""), final, currentPath + $".assignment-{rownumNumber}.value");
+
+                        varHolder.UnionWith(tempAssignment.Item2);
 
                         for (int i = 0; i < line.Length - line.Replace("}", "").Length; i++)
                         {
@@ -276,9 +325,23 @@ namespace SPAFrontend
                             currentPath = currentPath.Remove(currentPath.LastIndexOf('.'));
                         }
                     }
+
+                    var parsedLine = line.Split(' ');
+                    foreach(var parsedLineItem in parsedLine)
+                    {
+                        int num;
+                        if(Int32.TryParse(parsedLineItem.Replace(";", string.Empty), out num))
+                        {
+                            constHolder.Add(num.ToString());
+                        }
+                    }
                 }
                 Console.WriteLine(final);
             }
+
+            PKBParserServices.SetCallsRange(pkb, callsHolder);
+            PKBParserServices.SetVarList(pkb, varHolder);
+            PKBParserServices.SetConstRange(pkb, constHolder);
             PKBParserServices.RebuildParentListIndexes(pkb);
 
             //setUses (get upper parents of processed child)
@@ -390,14 +453,17 @@ namespace SPAFrontend
             return obj;
         }
 
-        private static string ParseAssignment(this IPKBStore pkb, string assignment, JObject jObj, string path)
+        private static (string, HashSet<string>) ParseAssignment(this IPKBStore pkb, string assignment, JObject jObj, string path)
         {
+            HashSet<string> varList = new HashSet<string>();
             assignment += ';';
             string parsedAssignment = "";
 
             string rownum = assignment.Split(' ')[0].Trim('.');
             string variable = assignment.Split(' ')[1].Split('=')[0];
             PKBParserServices.SetModify(pkb, new ExpressionModel(StatementType.ASSIGN, Int32.Parse(rownum)), new ExpressionModel(FactorType.VAR, variable));
+
+            varList.Add(variable);
 
             string right = assignment.Split(' ')[1].Split('=')[1];
             bool readToOperation = false;
@@ -411,6 +477,8 @@ namespace SPAFrontend
                     PKBParserServices.SetUses(pkb,
                         new ExpressionModel(StatementType.ASSIGN, Int32.Parse(rownum)),
                         new ExpressionModel(FactorType.VAR, x.ToString()));
+
+                    varList.Add(x.ToString());
                 }
             }
 
@@ -481,7 +549,7 @@ namespace SPAFrontend
                 }
             }
 
-            return parsedAssignment;
+            return (parsedAssignment, varList);
         }
 
         private static HashSet<ExpressionModel> FindAllParentsRecursively(this IPKBStore pkb, ExpressionModel child)
@@ -498,6 +566,23 @@ namespace SPAFrontend
             }
 
             return res;
+        }
+    }
+
+    public class ExpressionModelKeyPairComparer : IEqualityComparer<KeyValuePair<ExpressionModel, ExpressionModel>>
+    {
+        public bool Equals(KeyValuePair<ExpressionModel, ExpressionModel> x, KeyValuePair<ExpressionModel, ExpressionModel> y)
+        {
+            if (x.Key == null || x.Value == null || y.Key == null || y.Value == null)
+                return false;
+
+            return x.Key.Name.Equals(y.Key.Name) && x.Key.Line.Equals(y.Key.Line) && x.Key.Type.Equals(y.Key.Type)
+                && x.Value.Name.Equals(y.Value.Name) && x.Value.Line.Equals(y.Value.Line) && x.Value.Type.Equals(y.Value.Type);
+        }
+
+        public int GetHashCode(KeyValuePair<ExpressionModel, ExpressionModel> obj)
+        {
+            return (obj.Key.Name + obj.Key.Line + obj.Key.Type + obj.Value.Name + obj.Value.Line + obj.Value.Type).GetHashCode();
         }
     }
 }

@@ -16,6 +16,12 @@ namespace PKB
         public static void SetNext(this IPKBStore pkb, ExpressionModel s1, ExpressionModel s2) => pkb.NextList.Add(KeyValuePair.Create(s1, s2));
         public static void SetAffects(this IPKBStore pkb, ExpressionModel s1, ExpressionModel s2) => pkb.AffectsList.Add(KeyValuePair.Create(s1, s2));
         public static void SetCalls(this IPKBStore pkb, ExpressionModel s1, ExpressionModel s2) => pkb.CallsList.Add(KeyValuePair.Create(s1, s2));
+        public static void SetCallsRange(this IPKBStore pkb, HashSet<KeyValuePair<ExpressionModel, ExpressionModel>> s1) => pkb.CallsList.AddRange(s1);
+        public static void SetConstRange(this IPKBStore pkb, HashSet<string> s1) => pkb.ConstList.AddRange(s1);
+        public static void SetProcList(this IPKBStore pkb, string pr) => pkb.ProcList.Add(pr);
+        public static void SetVarList(this IPKBStore pkb, HashSet<string> pr) => pkb.VarList.AddRange(pr);
+
+        public static void SetAllStatements(this IPKBStore pkb, ExpressionModel em) => pkb.StatementList.Add(em);
 
         public static void RebuildParentListIndexes(this IPKBStore pkb)
         {

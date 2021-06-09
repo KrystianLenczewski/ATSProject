@@ -13,6 +13,7 @@ namespace PKB
         public List<KeyValuePair<ExpressionModel, ExpressionModel>> CallsList { get; set; } = new List<KeyValuePair<ExpressionModel, ExpressionModel>>();
         public List<ParentModel> ParentList { get; set; } = new List<ParentModel>();
 
+        public List<ExpressionModel> StatementList { get; set; } = new List<ExpressionModel>();
         public List<string> ProcList { get; set; } = new List<string>();
         public List<string> VarList { get; set; } = new List<string>();
         public List<string> ConstList { get; set; } = new List<string>();
@@ -20,7 +21,7 @@ namespace PKB
         public override string ToString()
         {
             string x = "";
-            foreach (var y in ModifiesList)
+            /*foreach (var y in ModifiesList)
             {
                 x += $"mod:\t{y.Key.Line} {y.Key.Name} {y.Key.Type} - {y.Value.Line} {y.Value.Name} {y.Value.Type}\n";
             }
@@ -39,6 +40,31 @@ namespace PKB
             {
                 x += $"follows:\t{y.Key.Line} {y.Key.Name} {y.Key.Type} - {y.Value.Line} {y.Value.Name} {y.Value.Type}\n";
             }
+
+            foreach (var y in AllStatements)
+            {
+                x += $"alls:\t{y.Line} {y.Type}\n";
+            }
+
+            foreach (var y in ProcList)
+            {
+                x += $"procs:\t{y}\n";
+            }
+
+            foreach (var y in VarList)
+            {
+                x += $"vars:\t{y}\n";
+            }
+
+            foreach (var y in CallsList)
+            {
+                x += $"calls:\t{y.Key.Name}\t{y.Value.Name}\n";
+            }
+
+            foreach (var y in ConstList)
+            {
+                x += $"consts:\t{y}\n";
+            }*/
 
             return x;
         }
