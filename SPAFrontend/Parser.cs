@@ -7,6 +7,7 @@ using System.IO;
 using System.Text;
 using SPAFrontend.mdoels;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace SPAFrontend
 {
@@ -377,7 +378,8 @@ namespace SPAFrontend
                 }
             }
 
-            json.Append("\"" + newValue + "\"");
+            if(newValue.ToString()[0] != '{') json.Append("\"" + newValue + "\"");
+            else json.Append(newValue);
 
             for (int level = 1; level <= objCount; level++)
             {
@@ -450,23 +452,47 @@ namespace SPAFrontend
                             buffor = "";
                             break;
                         default:
+                            string currentOperation = operation == '+' ? "add" : operation == '-' ? "sub" : "mul";
+                            string previousOperation = path.Split('.')[path.Split('.').Length - 1];
                             if (operation.Equals('\0')) buffor += right[i].ToString();
-                            else if (path.Split('.')[path.Split('.').Length - 1].Equals("add"))
+                            else if (previousOperation.Equals("add") || previousOperation.Equals("sub") || previousOperation.Equals("mul"))
                             {
                                 buffor += operation.ToString() + right[i].ToString();
-                                path += ".child2.add";
+                                if ((currentOperation.Equals("add") || currentOperation.Equals("sub")) && previousOperation.Equals("mul"))
+                                {
+                                    path = CutMulFromEndOfPath(path);
+                                    var currentValue = jObj.SelectToken(path + $".child2.{previousOperation}");
 
-                                var child1 = CreateObjectForPath(path + ".child1", buffor.Split(operation)[0]);
-                                jObj.Merge(child1);
-                                var child2 = CreateObjectForPath(path + ".child2", buffor.Split(operation)[1]);
-                                jObj.Merge(child2);
+                                    //path = path.Replace("$.", string.Empty);
 
-                                buffor = buffor.Split(operation)[1];
+                                    //jObj.Property("procedure-1").Replace(new JProperty(""));
+
+                                    path += $".child2.{currentOperation}";
+
+                                    var newValue = currentValue.ToString().Replace("\r\n", string.Empty);
+                                    Regex.Replace(newValue, @"\s+", "");
+
+                                    var child1 = CreateObjectForPath(path + $".child1.{previousOperation}", newValue);
+                                    jObj.Merge(child1);
+                                    var child2 = CreateObjectForPath(path + ".child2", buffor.Split(operation)[1]);
+                                    jObj.Merge(child2);
+                                }
+                                else
+                                {
+                                    path += $".child2.{currentOperation}";
+
+                                    var child1 = CreateObjectForPath(path + ".child1", buffor.Split(operation)[0]);
+                                    jObj.Merge(child1);
+                                    var child2 = CreateObjectForPath(path + ".child2", buffor.Split(operation)[1]);
+                                    jObj.Merge(child2);
+
+                                    buffor = buffor.Split(operation)[1];
+                                }
                             }
                             else
                             {
                                 buffor += operation.ToString() + right[i].ToString();
-                                path += ".add";
+                                path += $".{currentOperation}";
 
                                 var child1 = CreateObjectForPath(path + ".child1", buffor.Split(operation)[0]);
                                 jObj.Merge(child1);
@@ -498,6 +524,22 @@ namespace SPAFrontend
             }
 
             return res;
+        }
+
+        private static string CutMulFromEndOfPath(string path)
+        {
+            string[] splittedPath = path.Split('.');
+            int newIndexToSplitBy = splittedPath.Length - 1;
+            for (int i = splittedPath.Length - 1; i >= 0; i--)
+            {
+                if (splittedPath[i].Equals("mul") || splittedPath[i].Equals("child2"))
+                {
+                    newIndexToSplitBy--;
+                }
+                else break;
+            }
+            Array.Resize(ref splittedPath, newIndexToSplitBy + 1);
+            return String.Join('.', splittedPath);
         }
     }
 }
