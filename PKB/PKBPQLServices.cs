@@ -176,6 +176,11 @@ namespace PKB
             return next;
         }
 
+        public static IEnumerable<Statement> GetStatements(this IPKBStore pkb, ExpressionType type = ExpressionType.NULL)
+        {
+            return pkb.AllStatements.Where(x => x.Type == type).Select(x => CreateStatamentOfType(x.Type, x.Line));
+        }
+
         public static IEnumerable<Statement> GetNext_(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL, List<Statement> lockList = null)
         {
             if (lockList == null) lockList = new List<Statement>();
