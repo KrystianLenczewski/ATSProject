@@ -36,7 +36,7 @@ namespace QueryProcessor.QueryProcessing
             ApplyWithRestrictions(queryTree.GetAttributeNodes());
 
             if (resultSynonimNames.FirstOrDefault()?.ToLower() == "boolean".ToLower())
-                return _resultTable.GetBooleanResult().ToString();
+                return _resultTable.GetBooleanResult().ToString().ToLower();
             return _resultTable.GetResultPipeTesterFormat(_candidates, resultSynonimNames.ToArray());
         }
 
