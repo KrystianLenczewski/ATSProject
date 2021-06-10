@@ -765,12 +765,12 @@ namespace QueryProcessor.QueryProcessing
                     else if (expressionType == ExpressionType.CONST)
                         _candidates[declarationsPair.Key].AddRange(_pkbStore.ConstList);
                     else
-                        _candidates[declarationsPair.Key].AddRange(_pkbStore.GetChildren(0, expressionType.Value).Select(s => s.ProgramLine.ToString()).Distinct().ToList() ?? new List<string>());
+                        _candidates[declarationsPair.Key].AddRange(_pkbStore.GetStatements(expressionType.Value).Select(s => s.ProgramLine.ToString()).Distinct().ToList() ?? new List<string>());
                 }
                 else
                 {
                     _candidates[declarationsPair.Key] = new List<string>();
-                    _candidates[declarationsPair.Key].AddRange(_pkbStore.GetChildren(0, ExpressionType.NULL).Select(s => s.ProgramLine.ToString()).Distinct().ToList() ?? new List<string>());
+                    _candidates[declarationsPair.Key].AddRange(_pkbStore.GetStatements().Select(s=>s.ProgramLine.ToString()) ?? new List<string>());
                 }
             }
         }

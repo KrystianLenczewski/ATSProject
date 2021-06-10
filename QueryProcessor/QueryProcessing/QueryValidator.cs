@@ -18,7 +18,10 @@ namespace QueryProcessor.QueryProcessing
             [RelationArgumentType.Variable] = "varName",
             [RelationArgumentType.Constant] = "value",
             [RelationArgumentType.Statement] = "stmt#",
-            [RelationArgumentType.Assign] = "stmt#"
+            [RelationArgumentType.Assign] = "stmt#",
+            [RelationArgumentType.While] = "stmt#",
+            [RelationArgumentType.Call] = "stmt#",
+            [RelationArgumentType.If] = "stmt#"
         };
 
         private readonly Dictionary<string, List<string>> _availableAttributeComparison = new Dictionary<string, List<string>>

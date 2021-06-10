@@ -17,6 +17,7 @@ namespace QueryProcessor.QueryProcessing
 
         public QueryTree ParseQuery(string query)
         {
+            query = PreprareQueryStringToProcessing(query);
             if (_queryValidator.ValidateQuery(query, out List<string> validationErrors))
             {
                 _symbolTable = new SymbolTable(query);
@@ -32,6 +33,12 @@ namespace QueryProcessor.QueryProcessing
                 throw new Exception("Zapytanie PQL jest nieprawidłowe.");
             }
 
+        }
+
+        private string PreprareQueryStringToProcessing(string query)
+        {
+            query = query.Replace("<", "").Replace(">", "").Replace(", ", ",").Replace("("," (");
+            return query;
         }
 
         public List<string> GetValidationErrors()
