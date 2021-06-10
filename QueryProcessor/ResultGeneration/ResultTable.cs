@@ -36,10 +36,10 @@ namespace QueryProcessor.ResultGeneration
                         currentNewResult = AddForComplexValue(synonimValue[1], currentNewResult);
                 }
 
-                newResult.AddRange(currentNewResult);
+                newResult.AddRange(currentNewResult.Distinct());
             }
 
-            return string.Join(", ", newResult);
+            return string.Join(", ", newResult.Distinct());
         }
 
         public List<string> GetResult(Dictionary<string, List<string>> candidates, params string[] synonimNames)
