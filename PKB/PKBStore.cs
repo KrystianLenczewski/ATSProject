@@ -41,7 +41,7 @@ namespace PKB
                 x += $"follows:\t{y.Key.Line} {y.Key.Name} {y.Key.Type} - {y.Value.Line} {y.Value.Name} {y.Value.Type}\n";
             }
 
-            foreach (var y in AllStatements)
+            foreach (var y in StatementList)
             {
                 x += $"alls:\t{y.Line} {y.Type}\n";
             }
@@ -65,6 +65,11 @@ namespace PKB
             {
                 x += $"consts:\t{y}\n";
             }*/
+
+            foreach (var y in NextList)
+            {
+                x += $"nexts:\t{y.Key.Line} - {y.Key.Type}\t{y.Value.Line} - {y.Value.Type}\n";
+            }
 
             return x;
         }
