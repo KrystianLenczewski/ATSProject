@@ -37,7 +37,9 @@ namespace QueryProcessor.QueryProcessing
 
             if (resultSynonimNames.FirstOrDefault()?.ToLower() == "boolean".ToLower())
                 return _resultTable.GetBooleanResult().ToString().ToLower();
-            return _resultTable.GetResultPipeTesterFormat(_candidates, resultSynonimNames.ToArray());
+
+            string result = _resultTable.GetResultPipeTesterFormat(_candidates, resultSynonimNames.ToArray());
+            return result == string.Empty ? "none" : result;
         }
 
         public List<string> GetQueryResultsRaw(QueryTree queryTree)
