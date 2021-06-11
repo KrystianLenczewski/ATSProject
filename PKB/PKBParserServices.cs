@@ -23,6 +23,14 @@ namespace PKB
 
         public static void SetAllStatements(this IPKBStore pkb, ExpressionModel em) => pkb.StatementList.Add(em);
 
+        public static void RemoveFollowsIfElseConnector(this IPKBStore pkb, int lineIf, int lineElse) {
+            for (int i = pkb.FollowsList.Count - 1; i >= 0; i--)
+            {
+                if (pkb.FollowsList[i].Key.Line == lineIf && pkb.FollowsList[i].Key.Line == lineIf)
+                    pkb.FollowsList.RemoveAt(i);
+            }
+        }
+
         public static void RebuildParentListIndexes(this IPKBStore pkb)
         {
             List<RownumIndex> indexes = new List<RownumIndex>();

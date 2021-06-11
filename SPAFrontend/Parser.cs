@@ -15,10 +15,11 @@ namespace SPAFrontend
         public static void ParseCode(this IPKBStore pkb, string code)
         {
             JObject final = new JObject();
-            List<ExpressionModel> ungroupedChildren = new List<ExpressionModel>();
+            List<List<ExpressionModel>> ungroupedChildren = new List<List<ExpressionModel>>();
             HashSet<KeyValuePair<ExpressionModel, ExpressionModel>> callsHolder = new HashSet<KeyValuePair<ExpressionModel, ExpressionModel>>(new ExpressionModelKeyPairComparer());
             HashSet<string> varHolder = new HashSet<string>();
             HashSet<string> constHolder = new HashSet<string>();
+            List<List<string>> proceduresHolder = new List<List<string>>();
 
             using (StringReader reader = new StringReader(code))
             {
@@ -45,6 +46,9 @@ namespace SPAFrontend
                         final.Merge(obj);
                         currentPath += ".stmtList";
 
+                        ungroupedChildren.Add(new List<ExpressionModel>());
+                        proceduresHolder.Add(new List<string>());
+                        proceduresHolder.ElementAt(proceduresHolder.Count - 1).Add(line.Split(' ')[1]);
                         parentProcedureHolder = line.Split(' ')[1];
                         PKBParserServices.SetProcList(pkb, line.Split(' ')[1]);
                     }
@@ -52,6 +56,7 @@ namespace SPAFrontend
                     {
                         string rownum = counter.ToString();
                         counter++;
+                        proceduresHolder.ElementAt(proceduresHolder.Count - 1).Add(rownum +" "+line);
 
                         if (prev != null)
                         {
@@ -71,7 +76,7 @@ namespace SPAFrontend
 
                         if (currentPath.Equals($"$.procedure-{procedureCounter}.stmtList"))
                         {
-                            ungroupedChildren.Add(new ExpressionModel(StatementType.WHILE, Int32.Parse(rownum)));
+                            ungroupedChildren.ElementAt(ungroupedChildren.Count - 1).Add(new ExpressionModel(StatementType.WHILE, Int32.Parse(rownum)));
                         }
 
                         string[] stmtTypePath = currentPath.Substring(0, currentPath.LastIndexOf('.')).Split('.');
@@ -82,7 +87,7 @@ namespace SPAFrontend
                             if (drp != null)
                             {
                                 PKBParserServices.SetParent(pkb,
-                                    new ExpressionModel(SpecialType.STMTLST, drp.rownum),
+                                    new ExpressionModel(StatementType.IF, drp.rownum),
                                     new ExpressionModel(StatementType.WHILE, Int32.Parse(rownum)),
                                     0);
                             }
@@ -107,10 +112,11 @@ namespace SPAFrontend
                     {
                         string rownum = counter.ToString();
                         counter++;
+                        proceduresHolder.ElementAt(proceduresHolder.Count - 1).Add(rownum +" "+line);
 
                         if (currentPath.Equals($"$.procedure-{procedureCounter}.stmtList"))
                         {
-                            ungroupedChildren.Add(new ExpressionModel(StatementType.CALL, Int32.Parse(rownum)));
+                            ungroupedChildren.ElementAt(ungroupedChildren.Count - 1).Add(new ExpressionModel(StatementType.CALL, Int32.Parse(rownum)));
                         }
 
                         if (prev != null)
@@ -131,7 +137,7 @@ namespace SPAFrontend
                             if (drp != null)
                             {
                                 PKBParserServices.SetParent(pkb,
-                                    new ExpressionModel(SpecialType.STMTLST, drp.rownum),
+                                    new ExpressionModel(StatementType.IF, drp.rownum),
                                     new ExpressionModel(StatementType.CALL, Int32.Parse(rownum)),
                                     0);
                             }
@@ -158,10 +164,11 @@ namespace SPAFrontend
                     {
                         string rownum = counter.ToString();
                         counter++;
+                        proceduresHolder.ElementAt(proceduresHolder.Count - 1).Add(rownum + " "+line);
 
                         if (currentPath.Equals($"$.procedure-{procedureCounter}.stmtList"))
                         {
-                            ungroupedChildren.Add(new ExpressionModel(StatementType.IF, Int32.Parse(rownum)));
+                            ungroupedChildren.ElementAt(ungroupedChildren.Count - 1).Add(new ExpressionModel(StatementType.IF, Int32.Parse(rownum)));
                         }
 
                         if (prev != null)
@@ -181,9 +188,9 @@ namespace SPAFrontend
                             DepthRownum drp = depthRownumPair.Find(p => p.depth == currentPath.Split('.').Length);
                             if (drp != null)
                             {
-                                PKBParserServices.SetParent(pkb,
-                                    new ExpressionModel(SpecialType.STMTLST, drp.rownum),
-                                    new ExpressionModel(StatementType.WHILE, Int32.Parse(rownum)),
+                                PKBParserServices.SetParent(pkb, 
+                                    new ExpressionModel(StatementType.IF, drp.rownum),
+                                    new ExpressionModel(StatementType.IF, Int32.Parse(rownum)),
                                     0);
                             }
                         }
@@ -192,7 +199,7 @@ namespace SPAFrontend
                         {
                             PKBParserServices.SetParent(pkb,
                                 new ExpressionModel(StatementType.WHILE, rn),
-                                new ExpressionModel(StatementType.WHILE, Int32.Parse(rownum)),
+                                new ExpressionModel(StatementType.IF, Int32.Parse(rownum)),
                                 0);
                         }
 
@@ -213,6 +220,7 @@ namespace SPAFrontend
                     }
                     else if (line.Contains("else "))
                     {
+                        proceduresHolder.ElementAt(proceduresHolder.Count - 1).Add(line);
                         prev = null;
                         currentPath += ".else.stmtList";
                     }
@@ -220,6 +228,7 @@ namespace SPAFrontend
                     {
                         string rownumNumber = counter.ToString();
                         counter++;
+                        proceduresHolder.ElementAt(proceduresHolder.Count - 1).Add(rownumNumber + " " +line);
 
                         lineWithNumber = rownumNumber.ToString() + ". " + line;
 
@@ -233,7 +242,7 @@ namespace SPAFrontend
 
                         if (currentPath.Equals($"$.procedure-{procedureCounter}.stmtList"))
                         {
-                            ungroupedChildren.Add(new ExpressionModel(StatementType.ASSIGN, Int32.Parse(rownumNumber)));
+                            ungroupedChildren.ElementAt(ungroupedChildren.Count - 1).Add(new ExpressionModel(StatementType.ASSIGN, Int32.Parse(rownumNumber)));
                         }
 
                         PKBParserServices.SetAllStatements(pkb, new ExpressionModel(StatementType.ASSIGN, Int32.Parse(rownumNumber)));
@@ -258,6 +267,22 @@ namespace SPAFrontend
                                 new ExpressionModel(StatementType.WHILE, rnFPKB),
                                 new ExpressionModel(StatementType.ASSIGN, rn),
                                 0);
+
+                            int temp;
+                            String[] spearator = { ";", "*", "+", "-", "/", " ", ")", "(", "}", "{" };
+                            foreach (var x in line.Split("=")[1].Split(spearator, 8, StringSplitOptions.RemoveEmptyEntries))
+                            {
+                                if (!Int32.TryParse(x, out temp))
+                                {
+                                    PKBParserServices.SetUses(pkb,
+                                        new ExpressionModel(StatementType.WHILE, rnFPKB),
+                                        new ExpressionModel(FactorType.VAR, x));
+                                }
+                            }
+
+                            PKBParserServices.SetModify(pkb,
+                                    new ExpressionModel(StatementType.WHILE, rnFPKB),
+                                    new ExpressionModel(FactorType.VAR, line.Split(" ")[0]));
                         }
                         else if (stmtTypePath[stmtTypePath.Length - 1].Trim().Contains("if") &&
                             rownumForPKB != null &&
@@ -265,9 +290,25 @@ namespace SPAFrontend
                             Int32.TryParse(rownumNumber.ToString(), out int rn2))
                         {
                             PKBParserServices.SetParent(pkb,
-                                new ExpressionModel(SpecialType.STMTLST, rnFPKB2),
+                                new ExpressionModel(StatementType.IF, rnFPKB2),
                                 new ExpressionModel(StatementType.ASSIGN, rn2),
                                 0);
+
+                            int temp;
+                            String[] spearator = { ";", "*", "+", "-", "/", " ", ")", "(", "}", "{" };
+                            foreach (var x in line.Split("=")[1].Split(spearator, 8, StringSplitOptions.RemoveEmptyEntries))
+                            {
+                                if (!Int32.TryParse(x, out temp))
+                                {
+                                    PKBParserServices.SetUses(pkb,
+                                        new ExpressionModel(StatementType.IF, rnFPKB2),
+                                        new ExpressionModel(FactorType.VAR, x));
+                                }
+                            }
+
+                            PKBParserServices.SetModify(pkb,
+                                    new ExpressionModel(StatementType.IF, rnFPKB2),
+                                    new ExpressionModel(FactorType.VAR, line.Split(" ")[0]));
                         }
                         else if (stmtTypePath[stmtTypePath.Length - 1].Trim().Contains("else") &&
                             stmtTypePath[stmtTypePath.Length - 2].Trim().Contains("stmtList") &&
@@ -277,9 +318,25 @@ namespace SPAFrontend
                             if (drp != null)
                             {
                                 PKBParserServices.SetParent(pkb,
-                                    new ExpressionModel(SpecialType.STMTLST, drp.rownum),
+                                    new ExpressionModel(StatementType.IF, drp.rownum),
                                     new ExpressionModel(StatementType.ASSIGN, rn3),
                                     0);
+
+                                int temp;
+                                String[] spearator = { ";", "*", "+", "-", "/", " ", ")", "(", "}", "{" };
+                                foreach (var x in line.Split("=")[1].Split(spearator, 8, StringSplitOptions.RemoveEmptyEntries))
+                                {
+                                    if (!Int32.TryParse(x, out temp))
+                                    {
+                                        PKBParserServices.SetUses(pkb,
+                                            new ExpressionModel(StatementType.IF, drp.rownum),
+                                            new ExpressionModel(FactorType.VAR, x));
+                                    }
+                                }
+
+                                PKBParserServices.SetModify(pkb,
+                                    new ExpressionModel(StatementType.IF, drp.rownum),
+                                    new ExpressionModel(FactorType.VAR, line.Split(" ")[0]));
                             }
                         }
 
@@ -294,10 +351,11 @@ namespace SPAFrontend
                     {
                         string rownumNumber = counter.ToString();
                         counter++;
+                        proceduresHolder.ElementAt(proceduresHolder.Count - 1).Add(rownumNumber+" "+line);
 
                         if (currentPath.Equals($"$.procedure-{procedureCounter}.stmtList"))
                         {
-                            ungroupedChildren.Add(new ExpressionModel(StatementType.ASSIGN, Int32.Parse(rownumNumber)));
+                            ungroupedChildren.ElementAt(ungroupedChildren.Count - 1).Add(new ExpressionModel(StatementType.ASSIGN, Int32.Parse(rownumNumber)));
                         }
 
                         if (prev != null)
@@ -331,6 +389,21 @@ namespace SPAFrontend
                                 new ExpressionModel(StatementType.WHILE, rnFPKB),
                                 new ExpressionModel(StatementType.ASSIGN, rn),
                                 0);
+                            int temp;
+                            String[] spearator = { ";", "*", "+", "-", "/", " ", ")", "(", "}", "{" };
+                            foreach (var x in line.Split("=")[1].Split(spearator, 8, StringSplitOptions.RemoveEmptyEntries))
+                            {
+                                if (!Int32.TryParse(x, out temp))
+                                {
+                                    PKBParserServices.SetUses(pkb,
+                                        new ExpressionModel(StatementType.WHILE, rnFPKB),
+                                        new ExpressionModel(FactorType.VAR, x));
+                                }
+                            }
+
+                            PKBParserServices.SetModify(pkb,
+                                    new ExpressionModel(StatementType.WHILE, rnFPKB),
+                                    new ExpressionModel(FactorType.VAR, line.Split(" ")[0]));
                         }
                         else if (stmtTypePath[stmtTypePath.Length - 1].Trim().Contains("if") &&
                            rownumForPKB != null &&
@@ -338,9 +411,24 @@ namespace SPAFrontend
                             Int32.TryParse(rownumNumber.ToString(), out int rn2))
                         {
                             PKBParserServices.SetParent(pkb,
-                                new ExpressionModel(SpecialType.STMTLST, rnFPKB2),
+                                new ExpressionModel(StatementType.IF, rnFPKB2),
                                 new ExpressionModel(StatementType.ASSIGN, rn2),
                                 0);
+                            int temp;
+                            String[] spearator = { ";", "*", "+", "-", "/", " ", ")", "(", "}", "{" };
+                            foreach (var x in line.Split("=")[1].Split(spearator, 8, StringSplitOptions.RemoveEmptyEntries))
+                            {
+                                if (!Int32.TryParse(x, out temp))
+                                {
+                                    PKBParserServices.SetUses(pkb,
+                                        new ExpressionModel(StatementType.IF, rnFPKB2),
+                                        new ExpressionModel(FactorType.VAR, x));
+                                }
+                            }
+
+                            PKBParserServices.SetModify(pkb,
+                                    new ExpressionModel(StatementType.IF, rnFPKB2),
+                                    new ExpressionModel(FactorType.VAR, line.Split(" ")[0]));
                         }
                         else if (stmtTypePath[stmtTypePath.Length - 1].Trim().Contains("else") &&
                             stmtTypePath[stmtTypePath.Length - 2].Trim().Contains("stmtList"))
@@ -350,9 +438,25 @@ namespace SPAFrontend
                             Int32.TryParse(rownumNumber, out int rn3))
                             {
                                 PKBParserServices.SetParent(pkb,
-                                    new ExpressionModel(SpecialType.STMTLST, drp.rownum),
+                                    new ExpressionModel(StatementType.IF, drp.rownum),
                                     new ExpressionModel(StatementType.ASSIGN, rn3),
                                     0);
+
+                                int temp;
+                                String[] spearator = { ";", "*", "+", "-", "/", " ", ")", "(", "}", "{" };
+                                foreach (var x in line.Split("=")[1].Split(spearator, 8, StringSplitOptions.RemoveEmptyEntries))
+                                {
+                                    if (!Int32.TryParse(x, out temp))
+                                    {
+                                        PKBParserServices.SetUses(pkb,
+                                            new ExpressionModel(StatementType.IF, drp.rownum),
+                                            new ExpressionModel(FactorType.VAR, x));
+                                    }
+                                }
+
+                                PKBParserServices.SetModify(pkb,
+                                    new ExpressionModel(StatementType.IF, drp.rownum),
+                                    new ExpressionModel(FactorType.VAR, line.Split(" ")[0]));
                             }
                         }
 
@@ -386,6 +490,27 @@ namespace SPAFrontend
             PKBParserServices.SetVarList(pkb, varHolder);
             PKBParserServices.SetConstRange(pkb, constHolder);
             PKBParserServices.RebuildParentListIndexes(pkb);
+
+            foreach(var x in proceduresHolder)
+            {
+                foreach(var y in x)
+                {
+                    if(y.Contains(" call "))
+                    {
+                        var modifiedInCall = GetModifiesFromProcedure(y.Split(" ")[2].Trim(';'), proceduresHolder);
+                        foreach(var z in modifiedInCall)
+                        {
+                            PKBParserServices.SetModify(pkb, new ExpressionModel(StatementType.CALL, Int32.Parse(y.Split(" ")[0])), z);
+                        }
+
+                        var usedInCall = GetUsesFromProcedure(y.Split(" ")[2].Trim(';'), proceduresHolder);
+                        foreach (var z in usedInCall)
+                        {
+                            PKBParserServices.SetUses(pkb, new ExpressionModel(StatementType.CALL, y.Split(" ")[2].Trim(';'), Int32.Parse(y.Split(" ")[0])), z);
+                        }
+                    }
+                }
+            }
 
             //setUses(get upper parent of processed child)
             var tmpUsesList = pkb.UsesList.GetRange(0, pkb.UsesList.Count);
@@ -443,13 +568,27 @@ namespace SPAFrontend
             }
 
             //need to remember to handle ungrouped childen (their parent is default scope)
-            if (ungroupedChildren.Count > 1)
-                for (int i = 0; i < ungroupedChildren.Count - 1; i++)
+            foreach(var x in ungroupedChildren)
+            {
+                for (int i = 0; i < x.Count - 1; i++)
                 {
                     PKBParserServices.SetFollows(pkb,
-                            ungroupedChildren[i],
-                            ungroupedChildren[i + 1]);
+                            x[i],
+                            x[i + 1]);
                 }
+            }
+
+            //remove if-else connectors
+            foreach(var x in proceduresHolder)
+            {
+                for(int i =0; i<x.Count(); i++)
+                {
+                    if(x[i].Contains("else {") || x[i].Contains("else{"))
+                    {
+                        PKBParserServices.RemoveFollowsIfElseConnector(pkb, Int32.Parse(x[i - 1].Split(" ")[0]), Int32.Parse(x[i + 1].Split(" ")[0]));
+                    }
+                }
+            }
 
             Console.WriteLine(pkb.ToString());
         }
@@ -610,6 +749,75 @@ namespace SPAFrontend
                 }
             }
 
+            return res;
+        }
+
+        private static List<ExpressionModel> GetUsesFromProcedure(string procName, List<List<string>> procContent)
+        {
+            List<string> procedure = new List<string>();
+            List<ExpressionModel> res = new List<ExpressionModel>();
+            String[] spearator = { ";", "*", "+", "-", "/", " ", ")", "(" };
+            int temp;
+            foreach (var x in procContent)
+            {
+                if (x[0].Equals(procName))
+                {
+                    procedure.AddRange(x);
+                }
+            }
+
+            foreach (var x in procedure)
+            {
+                var tx = x.Replace("{", string.Empty).Replace("}", string.Empty);
+                if (tx.Contains("="))
+                {
+                    var tmp = tx.Split("=")[1];
+                    foreach (var y in tmp.Split(spearator, 8, StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        if (!Int32.TryParse(y, out temp))
+                        {
+                            res.Add(new ExpressionModel(FactorType.VAR, y));
+                        }
+                    }
+                }
+                else if(tx.Contains("if ") || tx.Contains("while "))
+                {
+                    res.Add(new ExpressionModel(FactorType.VAR, tx.Split(" ")[2]));
+                }
+                else if(tx.Contains("call "))
+                {
+                    var ttx = tx.Replace(";", string.Empty).Split(" ")[2];
+                    res.AddRange(GetUsesFromProcedure(ttx, procContent));
+                }
+            }
+            return res;
+        }
+
+        private static List<ExpressionModel> GetModifiesFromProcedure(string procName, List<List<string>> procContent)
+        {
+            List<string> procedure = new List<string>();
+            List<ExpressionModel> res = new List<ExpressionModel>();
+            foreach (var x in procContent)
+            {
+                if (x[0].Equals(procName))
+                {
+                    procedure.AddRange(x);
+                }
+            }
+
+            foreach(var x in procedure)
+            {
+                if (x.Contains("="))
+                {
+                    var tmp = x.Split("=")[0].Split(" ")[1].Trim();
+                    res.Add(new ExpressionModel(StatementType.ASSIGN, tmp, Int32.Parse(x.Split("=")[0].Split(" ")[0])));
+                }
+                else if (x.Contains("call "))
+                {
+                    var ttx = x.Replace(";", string.Empty).Split(" ")[2];
+                    res.AddRange(GetModifiesFromProcedure(ttx, procContent));
+                }
+            }
             return res;
         }
     }
