@@ -178,11 +178,11 @@ namespace PKB
 
         public static IEnumerable<Statement> GetStatements(this IPKBStore pkb, ExpressionType type = ExpressionType.NULL)
         {
-            return pkb.AllStatements.Where(x => x.Type == type).Select(x => CreateStatamentOfType(x.Type, x.Line));
+            return pkb.StatementList.Where(x => x.Type == type).Select(x => CreateStatamentOfType(x.Type, x.Line));
         }
         public static IEnumerable<string> GetAllStatements(this IPKBStore pkb)
         {
-            return pkb.AllStatements.Select(x => x.Line.ToString()).Distinct();
+            return pkb.StatementList.Select(x => x.Line.ToString()).Distinct();
         }
 
         public static IEnumerable<Statement> GetNext_(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL, List<Statement> lockList = null)

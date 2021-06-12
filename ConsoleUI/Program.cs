@@ -21,8 +21,8 @@ namespace ConsoleUI
 
             if (args.Length == 1)
             {
-                string text = File.ReadAllText(args[0], Encoding.GetEncoding(852));
-                //string text = File.ReadAllText("simple.txt", Encoding.GetEncoding(852));
+                //string text = File.ReadAllText(args[0], Encoding.GetEncoding(852));
+                string text = File.ReadAllText("simple.txt", Encoding.GetEncoding(852));
                 var serviceProvider = new ServiceCollection()
                     .AddSingleton<IPKBStore, PKBStore>()
                     .BuildServiceProvider();
@@ -49,7 +49,7 @@ namespace ConsoleUI
 
                         Console.WriteLine(result);
                     }
-                    catch (Exception)
+                    catch (Exception e)
                     {
                         Console.WriteLine($"#{string.Join("\n", queryPreprocessor.GetValidationErrors())}");
                     }                    
