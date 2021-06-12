@@ -143,7 +143,7 @@ namespace QueryProcessor.ResultGeneration
 
         public void RefreshCandidates(string synonimName, List<string> values)
         {
-            _resultTableRows = _resultTableRows.Where(w => values.Contains(w.GetValueForSynonim(synonimName)) || w.CellIsEmpty(synonimName)).ToList();
+            _resultTableRows = _resultTableRows.Where(w => values.Contains(w.GetValueForSynonim(synonimName))).ToList();
         }
 
         public void SetFalseBoolResult() => _boolResult = false;
