@@ -536,7 +536,6 @@ namespace QueryProcessor.QueryProcessing
             }
         }
 
-
         private void HandleModifies(RelationNode relationModifiesNode)
         {
             ArgumentNode arg1 = relationModifiesNode.Arguments[0];
@@ -549,7 +548,7 @@ namespace QueryProcessor.QueryProcessing
                 {
                     string line = _candidates[arg1.Name][i];
                     List<string> result = new List<string>();
-                    if (arg1.RelationArgumentType == RelationArgumentType.Integer)
+                    if (arg1.RelationArgumentType != RelationArgumentType.Procedure)
                         result = _pkbStore.GetModifies(Convert.ToInt32(line)).ToList();
                     else
                         result = _pkbStore.GetModifies(line).ToList();
@@ -566,9 +565,11 @@ namespace QueryProcessor.QueryProcessing
                         i--;
                         RemoveCandidates(arg1.Name, new List<string> { line });
                     }
+                        
                 }
 
                 List<string> arg2CandidatesToRemove = _candidates[arg2.Name].Where(w => !arg2Candidates.Contains(w)).ToList();
+                RemoveCandidates(arg1.Name, arg1CandidatesToRemove);
                 RemoveCandidates(arg2.Name, arg2CandidatesToRemove);
             }
             else if (_candidates.ContainsKey(arg1.Name))
