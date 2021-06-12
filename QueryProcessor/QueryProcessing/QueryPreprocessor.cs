@@ -17,6 +17,7 @@ namespace QueryProcessor.QueryProcessing
 
         public QueryTree ParseQuery(string query)
         {
+            query = PreprareQueryStringToProcessing(query);
             if (_queryValidator.ValidateQuery(query, out List<string> validationErrors))
             {
                 _symbolTable = new SymbolTable(query);
@@ -32,6 +33,12 @@ namespace QueryProcessor.QueryProcessing
                 throw new Exception("Zapytanie PQL jest nieprawidłowe.");
             }
 
+        }
+
+        private string PreprareQueryStringToProcessing(string query)
+        {
+            query = query.Replace("<", "").Replace(">", "").Replace(", ", ",").Replace("("," (");
+            return query;
         }
 
         public List<string> GetValidationErrors()
@@ -84,7 +91,7 @@ namespace QueryProcessor.QueryProcessing
         {
             List<string> splitedQuery = query.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
             splitedQuery.ForEach(x => x.Trim().ToLower());
-            int selectIndex = splitedQuery.IndexOf(QueryElement.Select.ToLower());
+            int selectIndex = splitedQuery.FindIndex(x => x.Equals(QueryElement.Select, StringComparison.OrdinalIgnoreCase));
 
             List<string> resultSymbols = splitedQuery[selectIndex + 1].Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
             SectionNode resultNode = new SectionNode { NodeType = NodeType.RESULT };
@@ -102,7 +109,7 @@ namespace QueryProcessor.QueryProcessing
         {
             List<string> splitedQuery = query.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
             splitedQuery.ForEach(x => x.Trim().ToLower());
-            int withIndex = splitedQuery.IndexOf(QueryElement.With.ToLower());
+            int withIndex = splitedQuery.FindIndex(x => x.Equals(QueryElement.With, StringComparison.OrdinalIgnoreCase));
             int patternIndex = splitedQuery.IndexOf(QueryElement.Pattern.ToLower());
             int endWith = patternIndex == -1 ? splitedQuery.Count : patternIndex;
 
@@ -150,8 +157,8 @@ namespace QueryProcessor.QueryProcessing
 
         private int GetIndexForSuchThat(List<string> splittedQuery)
         {
-            int suchIndex = splittedQuery.IndexOf("such");
-            int thatIndex = splittedQuery.IndexOf("that");
+            int suchIndex = splittedQuery.FindIndex(x => x.Equals("such", StringComparison.OrdinalIgnoreCase));
+            int thatIndex = splittedQuery.FindIndex(x => x.Equals("that", StringComparison.OrdinalIgnoreCase));
 
             if (suchIndex + 1 == thatIndex)
                 return thatIndex;
@@ -160,7 +167,7 @@ namespace QueryProcessor.QueryProcessing
 
         private int GetSuchThatEndIndex(List<string> splittedQuery)
         {
-            int withIndex = splittedQuery.IndexOf(QueryElement.With.ToLower());
+            int withIndex = splittedQuery.FindIndex(x => x.Equals(QueryElement.With, StringComparison.OrdinalIgnoreCase));
             int patternIndex = splittedQuery.IndexOf(QueryElement.Pattern.ToLower());
 
             int endSuchThat = withIndex == -1 ? patternIndex : withIndex;

@@ -23,7 +23,7 @@ namespace QueryProcessor.QueryProcessing
             List<string> splitedQuery = query.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
             splitedQuery.ForEach(x => x.Trim().ToLower());
 
-            int selectIndex = splitedQuery.IndexOf(QueryElement.Select.ToLower());
+            int selectIndex = splitedQuery.FindIndex(x => x.Equals(QueryElement.Select, StringComparison.OrdinalIgnoreCase));
             if (selectIndex == -1) return;
             string symbolDeclarationString = String.Join(' ', splitedQuery.Take(selectIndex));
             List<string> splitedSymbolDeclarations = symbolDeclarationString.Split(';',StringSplitOptions.RemoveEmptyEntries).ToList();
@@ -100,6 +100,7 @@ namespace QueryProcessor.QueryProcessing
             else if (declarationName.Equals("while", StringComparison.OrdinalIgnoreCase)) return RelationArgumentType.While;
             else if (declarationName.Equals("constant", StringComparison.OrdinalIgnoreCase)) return RelationArgumentType.Constant;
             else if (declarationName.Equals("if", StringComparison.OrdinalIgnoreCase)) return RelationArgumentType.If;
+            else if (declarationName.Equals("calls", StringComparison.OrdinalIgnoreCase)) return RelationArgumentType.Call;
             else throw new Exception("Nie rozpoznano typu.");
 
         }

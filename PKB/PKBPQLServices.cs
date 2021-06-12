@@ -123,8 +123,16 @@ namespace PKB
         public static IEnumerable<Statement> GetModified(this IPKBStore pkb, string varName, ExpressionType type = ExpressionType.NULL)
         {
             var modified = pkb.ModifiesList
-                .Where(x => x.Value.Name == varName && (type == ExpressionType.NULL || type == x.Key.Type))
+                .Where(x => x.Value.Name == varName && (type == ExpressionType.NULL || type == x.Key.Type) && x.Key.Type != ExpressionType.PROCEDURE)
                 .Select(x => CreateStatamentOfType(x.Key.Type, x.Key.Line));
+            return modified;
+        }
+
+        public static IEnumerable<string> GetModifiedProcedures(this IPKBStore pkb, string varName)
+        {
+            var modified = pkb.ModifiesList
+                .Where(x => x.Value.Name == varName && x.Key.Type == ExpressionType.PROCEDURE)
+                .Select(x => x.Key.Name);
             return modified;
         }
 
@@ -147,8 +155,16 @@ namespace PKB
         public static IEnumerable<Statement> GetUses(this IPKBStore pkb, string name, ExpressionType type = ExpressionType.NULL)
         {
             var uses = pkb.UsesList
-                .Where(x => x.Value.Name == name && (type == ExpressionType.NULL || type == x.Key.Type) && x.Key.Line > 0)
+                .Where(x => x.Value.Name == name && (type == ExpressionType.NULL || type == x.Key.Type) && x.Key.Line > 0 && x.Key.Type != ExpressionType.PROCEDURE)
                 .Select(x => CreateStatamentOfType(x.Key.Type, x.Key.Line));
+            return uses;
+        }
+
+        public static IEnumerable<string> GetUsesProcedures(this IPKBStore pkb, string name)
+        {
+            var uses = pkb.UsesList
+                .Where(x => x.Value.Name == name && x.Key.Type == ExpressionType.PROCEDURE)
+                .Select(x => x.Key.Name);
             return uses;
         }
 
@@ -158,6 +174,15 @@ namespace PKB
                 .Where(x => WhereConditionIsTrue(line, x.Key.Line, type, x.Key.Type))
                 .Select(x => CreateStatamentOfType(x.Value.Type, x.Value.Line));
             return next;
+        }
+
+        public static IEnumerable<Statement> GetStatements(this IPKBStore pkb, ExpressionType type = ExpressionType.NULL)
+        {
+            return pkb.AllStatements.Where(x => x.Type == type).Select(x => CreateStatamentOfType(x.Type, x.Line));
+        }
+        public static IEnumerable<string> GetAllStatements(this IPKBStore pkb)
+        {
+            return pkb.AllStatements.Select(x => x.Line.ToString()).Distinct();
         }
 
         public static IEnumerable<Statement> GetNext_(this IPKBStore pkb, int line = 0, ExpressionType type = ExpressionType.NULL, List<Statement> lockList = null)

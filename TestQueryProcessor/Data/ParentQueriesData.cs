@@ -49,6 +49,8 @@ namespace TestQueryProcessor.Data
                 KeyValuePair.Create("while w; select w such that Parent* (w,11)", new List<string>{ "w:10 " }),
                 KeyValuePair.Create("while w; select w such that Parent* (w,13)", new List<string>()),
                 KeyValuePair.Create("while w; select w such that Parent* (w,21)", new List<string>{ "w:18 " }),
+                KeyValuePair.Create("while w; select BOOLEAN such that Parent (18,19)", new List<string>{ "True" }),
+                KeyValuePair.Create("while w; select BOOLEAN such that Parent (19,18)", new List<string>{ "False" }),
             };
         }
     }

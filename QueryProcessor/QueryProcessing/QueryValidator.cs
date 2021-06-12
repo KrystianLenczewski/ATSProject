@@ -18,7 +18,10 @@ namespace QueryProcessor.QueryProcessing
             [RelationArgumentType.Variable] = "varName",
             [RelationArgumentType.Constant] = "value",
             [RelationArgumentType.Statement] = "stmt#",
-            [RelationArgumentType.Assign] = "stmt#"
+            [RelationArgumentType.Assign] = "stmt#",
+            [RelationArgumentType.While] = "stmt#",
+            [RelationArgumentType.Call] = "stmt#",
+            [RelationArgumentType.If] = "stmt#"
         };
 
         private readonly Dictionary<string, List<string>> _availableAttributeComparison = new Dictionary<string, List<string>>
@@ -58,9 +61,9 @@ namespace QueryProcessor.QueryProcessing
             List<string> splitedQuery = query.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
             splitedQuery.ForEach(x => x.Trim().ToLower());
 
-            int selectIndex = splitedQuery.IndexOf(QueryElement.Select.ToLower());
+            int selectIndex = splitedQuery.FindIndex(x => x.Equals(QueryElement.Select, StringComparison.OrdinalIgnoreCase));
             int suchThatIndex = GetIndexForSuchThat(splitedQuery);
-            int withIndex = splitedQuery.IndexOf(QueryElement.With.ToLower());
+            int withIndex = splitedQuery.FindIndex(x => x.Equals(QueryElement.With, StringComparison.OrdinalIgnoreCase));
             int patternIndex = splitedQuery.IndexOf(QueryElement.Pattern.ToLower());
 
             int endSelectIndex = suchThatIndex - 1;
@@ -274,8 +277,8 @@ namespace QueryProcessor.QueryProcessing
 
         private int GetIndexForSuchThat(List<string> splittedQuery)
         {
-            int suchIndex = splittedQuery.IndexOf("such");
-            int thatIndex = splittedQuery.IndexOf("that");
+            int suchIndex = splittedQuery.FindIndex(x => x.Equals("such", StringComparison.OrdinalIgnoreCase));
+            int thatIndex = splittedQuery.FindIndex(x => x.Equals("that", StringComparison.OrdinalIgnoreCase));
 
             if (suchIndex + 1 == thatIndex)
                 return thatIndex;
