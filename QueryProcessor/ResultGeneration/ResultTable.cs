@@ -46,7 +46,7 @@ namespace QueryProcessor.ResultGeneration
         public List<string> GetResult(Dictionary<string, List<string>> candidates, params string[] synonimNames)
         {
             List<string> result = new List<string>();
-            if (_resultTableRows.Count == 0 && !_queryHasRelations)
+            if (_resultTableRows.Count == 0 && (!_queryHasRelations || _boolResult))
                 _resultTableRows.Add(new ResultTableRow(_declaredSynonims));
             foreach (ResultTableRow resultTableRow in _resultTableRows)
             {
