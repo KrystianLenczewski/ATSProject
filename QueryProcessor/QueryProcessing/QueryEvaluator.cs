@@ -741,6 +741,7 @@ namespace QueryProcessor.QueryProcessing
             {
                 if (attributeNode.AttributeValue is string attributeStringValue)
                 {
+                    attributeStringValue = attributeStringValue.Replace("\"", "");
                     List<string> candidatesToRemove = _candidates[attributeNode.SynonimNode.Name].Where(w => w != attributeStringValue).ToList();
                     RemoveCandidates(attributeNode.SynonimNode.Name, candidatesToRemove);
                 }
