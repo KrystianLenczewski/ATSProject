@@ -13,12 +13,10 @@ namespace QueryProcessor.ResultGeneration
         private List<ResultTableRow> _resultTableRows = new List<ResultTableRow>();
         private bool _boolResult = true;
         private bool _queryHasRelations = false;
-        Dictionary<string, List<string>> _candidates;
 
-        public ResultTable(List<string> declaredSynonims, Dictionary<string, List<string>> candidates)
+        public ResultTable(List<string> declaredSynonims)
         {
             _declaredSynonims = declaredSynonims.Where(w => !w.Equals("boolean", StringComparison.OrdinalIgnoreCase)).ToList();
-            _candidates = candidates;
         }
 
         public string GetResultPipeTesterFormat(Dictionary<string, List<string>> candidates, params string[] synonimNames)
@@ -95,11 +93,6 @@ namespace QueryProcessor.ResultGeneration
 
         public void AddRelationResult(string firstArgumentName, string firstArgumentValue, string secondArgumentName = "", string secondArgumentValue = "")
         {
-            if (!_candidates[firstArgumentName].Contains(firstArgumentValue))
-                return;
-            if (!string.IsNullOrEmpty(secondArgumentName) && !_candidates[secondArgumentName].Contains(secondArgumentValue))
-                return;
-
             if (!ExistsResult(firstArgumentName, firstArgumentValue, secondArgumentName, secondArgumentValue))
             {
                 if (string.IsNullOrEmpty(secondArgumentName))
