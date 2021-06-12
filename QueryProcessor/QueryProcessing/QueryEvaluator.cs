@@ -569,7 +569,6 @@ namespace QueryProcessor.QueryProcessing
                 }
 
                 List<string> arg2CandidatesToRemove = _candidates[arg2.Name].Where(w => !arg2Candidates.Contains(w)).ToList();
-                RemoveCandidates(arg1.Name, arg1CandidatesToRemove);
                 RemoveCandidates(arg2.Name, arg2CandidatesToRemove);
             }
             else if (_candidates.ContainsKey(arg1.Name))
